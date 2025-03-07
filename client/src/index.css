@@ -1,0 +1,196 @@
+html {
+  height: 100%;
+}
+
+body {
+  font-family: "Crimson Pro", serif;
+  font-optical-sizing: auto;
+  font-weight: 300;
+  font-style: normal;
+  background-color: rgba(170, 174, 177);
+  font-size: 1em;
+}  
+
+#homePage {
+  outline: 2px solid pink;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  column-gap: 1vh;
+  grid-template-areas:
+    "leftPart middlePart rightPart";
+  min-height: 100vh;
+    
+    
+  /* place-items: center; */
+}
+
+#leftPart {
+  grid-area: leftPart;
+  outline: 2px solid blue;
+  align-items: end;
+  position: relative
+}
+#middlePart{
+  grid-area: middlePart;
+  outline: 2px solid green;
+}
+
+#rightPart {
+  grid-area: rightPart;
+  outline: 2px solid pink;
+}
+
+#leftPart > img {
+  width: 9em;
+}
+
+#leftPart > p {
+  width: 15em;
+  height: 3.5vh;
+  border: 2px solid gray;
+  border-radius: 1.5em; 
+}
+
+#leftPart > button {
+  width: 15em;
+  height: 3.5vh;
+  border: 2px solid gray;
+  border-radius: 1.5em;
+  /* align-self: flex-end; */
+  position: absolute;
+  bottom: 0; /* Odległość od dołu kolumny */
+  right: 0;
+  
+}
+
+#writePost {
+  justify-items: right;
+  position: relative;
+  height: 9em;
+  border: 2px solid darkgray;
+}
+
+#writePost > input {
+  width: 100%;
+  height: 8em;
+  /* border: 2px solid darkgray; */
+  
+}
+
+#writePostBtn {
+  width: 4em;
+  height: 2em;
+  border: 1px solid gray;
+  border-radius: 1em;
+  position: absolute;
+  right: 0;
+  bottom: 0;
+}
+
+.postOnWall{
+  border: 1px solid gray;
+  height: fit-content; /*dopasowuje wysokosc posta do ilości napisanych znakow*/
+  padding-left: 1em;
+  padding-right: 1em;
+  position: relative;
+  /* padding-right: 0.5em */
+} 
+
+.postOnWall-UserName {
+ font-weight: bold;
+ /* padding-top: 0.5em;
+ padding-bottom: 0.75em; */
+  padding-top: 0.5em;
+  padding-bottom: 0.5em;
+
+}
+.postOnWall-UserPost {
+  
+  padding-bottom: 0.5em;
+  line-height: 1.6;
+
+}
+.postOnWall-LikeBtn {
+  border: 1px solid gray;
+  border-radius: 10px;
+  width: 4em;
+  height: 2em;
+}
+.postOnWall-CommentBtn {
+  position: absolute;
+  right:0;
+  bottom: 0;
+  margin-right: 1em;
+  border: 1px solid gray;
+  border-radius: 10px;
+  width: 6em;
+  height: 2em;
+}
+
+.person{
+  border:1px solid gray;
+  border-radius: 5px;
+  width: 20em;
+  height: 5em;
+  margin-top: 1em;
+  margin-left: 2em;
+
+}
+
+
+
+@media (max-width: 500px){
+  #homePage {
+    outline: 2px solid pink;
+    display: grid;
+    grid-template-columns: 1fr;
+    column-gap: 1vh;
+    grid-template-areas:
+      "leftPart"
+      'middlePart' 
+      'rightPart';
+      
+      
+    /* place-items: center; */
+  }
+}
+
+/* .grid-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px; /* opcjonalny odstęp między kolumnami 
+  height: 200px; /* wysokość całego gridu 
+}*/
+
+.column {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* rozciąga zawartość, aby przycisk znalazł się na dole */
+  padding: 10px;
+  border: 1px solid #ccc; /* opcjonalne ramki, żeby lepiej widzieć układ */
+}
+
+.align-right {
+  align-self: flex-end; /* przesuwa przycisk w prawo wewnątrz kolumny */
+}
+
+
+.grid-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px; /* Odstępy między kolumnami */
+  height: 200px; /* Wysokość siatki */
+}
+
+.column {
+  position: relative; /* Ustawia punkt odniesienia dla pozycji absolutnej */
+  padding: 10px;
+  border: 1px solid #ccc; /* Opcjonalna ramka */
+  height: 100%; /* Wysokość kolumny */
+}
+
+.button-wrapper {
+  position: absolute; /* Umożliwia precyzyjne pozycjonowanie */
+  bottom: 10px; /* Odległość od dołu kolumny */
+  right: 10px; /* Odległość od prawej strony kolumny */
+} 
