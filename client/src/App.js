@@ -15,7 +15,11 @@ let users = [
     id: 1,
     name: "user2",
     picture:"to be shown",
-    post:"Catchphrase"
+    post:
+    {
+      content: "Catchphrase",
+      comments: [ "comm1" ]
+    }
   },
   {id: 2,
     name: "user3",
@@ -33,31 +37,92 @@ function QuackBtn(){
   
 }
 
-function WritePost(){
+function WritePost({onAddPost}){
+  const [post, setPost] = useState('');
+  // const [userPosts, setUserPosts] = useState({})
+
   return(
     <div id='writePost'>
-    <input  type="text" placeholder="Write if you really must"/>
-    <button id='writePostBtn'>Quack</button>
+    <input  type="text" placeholder="Write if you really must" value={post} onChange={(e) => {
+      console.log('post, userPost', post);
+      setPost(e.target.value); 
+      // setUserPosts({...userPosts, post}); 
+    }} />
+    <button id='writePostBtn' onClick={()=> { onAddPost(post); setPost(''); } }>Quack</button>
     </div>
   );
 }
 
-function PostOnWall({user}){
+// let nextId = 3;
+// const initialArtists = [
+//   { id: 0, name: 'Marta Colvin Andrade' },
+//   { id: 1, name: 'Lamidi Olonade Fakeye'},
+//   { id: 2, name: 'Louise Nevelson'},
+// ];
+
+// export default function List() {
+//   const [name, setName] = useState('');
+//   const [artists, setArtists] = useState(
+//     initialArtists
+//   );
+
+//   function handleClick() {
+//     const insertAt = 1; // Could be any index
+//     const nextArtists = [
+//       // Items before the insertion point:
+//       ...artists.slice(0, insertAt),
+//       // New item:
+//       { id: nextId++, name: name },
+//       // Items after the insertion point:
+//       ...artists.slice(insertAt)
+//     ];
+//     setArtists(nextArtists);
+//     setName('');
+//   }
+
+//   return (
+//     <>
+//       <h1>Inspiring sculptors:</h1>
+//       <input
+//         value={name}
+//         onChange={e => setName(e.target.value)}
+//       />
+//       <button onClick={handleClick}>
+//         Insert
+//       </button>
+//       <ul>
+//         {artists.map(artist => (
+//           <li key={artist.id}>{artist.name}</li>
+//         ))}
+//       </ul>
+//     </>
+//   );
+// }
+
+
+function PostOnWall({post}){
+
+  /* <h6 className='postOnWall-UserName'>{user.name}</h6> */
+  /* <p className='postOnWall-UserPost'>{user.post}</p> */
+ 
+  /* dodac liste z komentazami */
+
   return(
     <div className="postOnWall">
-      <h6 className='postOnWall-UserName'>{user.name}</h6>
-      <p className='postOnWall-UserPost'>{user.post}</p>
+      <p className='postOnWall-UserPost'>{post.content}</p>
       <button className='postOnWall-LikeBtn'>Like</button>
       <button className='postOnWall-CommentBtn'>Comment</button>
     </div>
   );
 }
 
-function Wall({allUsers}){
-  const listOfUserPosts = allUsers.map(person => {return <PostOnWall user={person} key={person.id}/>})
+function Wall({allPosts}){
+  // const listOfUserPosts = allUsers.map(person => {return <PostOnWall user={person} key={person.id}/>})
+  console.log('allPosts', allPosts)
+  const listOfPosts = allPosts.map((message, index) => { return <PostOnWall post={message} key={index}/>})
   return(
     <>
-      {listOfUserPosts}
+      {listOfPosts}
     </>
   )
 }
@@ -105,12 +170,12 @@ function LeftPart({id}){
   )
 }
 
-function MiddlePart({allUsers, id}){
+function MiddlePart({allPosts, id, onAddPost, text}){
   // console.log("allUsers", allUsers)
   return(
     <div id={id}>
-      <WritePost/>
-      <Wall allUsers={allUsers}/>
+      <WritePost onAddPost={onAddPost} text={text}/>
+      <Wall allPosts={allPosts}/>
     </div>  
   )
 }
@@ -124,10 +189,27 @@ function RightPart({allUsers, id}){
 }
 
 function App() {
+  // const [users, setUsers] = useState([])
+  const [posts, setPosts] = useState([]);
+  
+  function handleOnAddPost(postContent){
+    const post = {
+      content:postContent,
+      comments:["komentarz"]
+    }
+    // console.log('handleOnAddPost, post', post)
+    const newPosts = [...posts];
+    newPosts.push(post);
+    // console.log("handleAddQuiz, 147, newPosts", newPosts)
+    setPosts(newPosts);
+  }
+
+
+
   return (
     <div id="homePage">
       <LeftPart id='leftPart'/>
-      <MiddlePart id='middlePart' allUsers={users}/>
+      <MiddlePart id='middlePart' allPosts={posts} onAddPost={handleOnAddPost} />
       <RightPart id='rightPart' allUsers={users}/>
       
 
