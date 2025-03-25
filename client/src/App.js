@@ -99,19 +99,36 @@ function WritePost({onAddPost}){
 //   );
 // }
 
+function CommentOnWall({riplay}){
+  return(
+    <p>{riplay}</p>
+  )
+}
+
+function DisplayComment({allComments}){
+  // const allComments = ["komentarz", "pusia", 'siusia', 'popek']
+  const listOfComments = allComments.map((comment, index)=> {return <CommentOnWall riplay={comment} key={index}/>})
+  return(
+    <div>
+      {listOfComments}
+    </div>
+  )
+}
+
 
 function PostOnWall({post}){
 
   /* <h6 className='postOnWall-UserName'>{user.name}</h6> */
   /* <p className='postOnWall-UserPost'>{user.post}</p> */
  
-  /* dodac liste z komentazami */
 
   return(
     <div className="postOnWall">
       <p className='postOnWall-UserPost'>{post.content}</p>
       <button className='postOnWall-LikeBtn'>Like</button>
       <button className='postOnWall-CommentBtn'>Comment</button>
+      <DisplayComment allComments={post.comments}/>
+      
     </div>
   );
 }
@@ -119,7 +136,7 @@ function PostOnWall({post}){
 function Wall({allPosts}){
   // const listOfUserPosts = allUsers.map(person => {return <PostOnWall user={person} key={person.id}/>})
   console.log('allPosts', allPosts)
-  const listOfPosts = allPosts.map((message, index) => { return <PostOnWall post={message} key={index}/>})
+  const listOfPosts = allPosts.map((message, index) => {  return  <PostOnWall post={message} key={index}/>})
   return(
     <>
       {listOfPosts}
@@ -170,12 +187,13 @@ function LeftPart({id}){
   )
 }
 
-function MiddlePart({allPosts, id, onAddPost, text}){
+function MiddlePart({allPosts, id, onAddPost}){
   // console.log("allUsers", allUsers)
   return(
     <div id={id}>
-      <WritePost onAddPost={onAddPost} text={text}/>
+      <WritePost onAddPost={onAddPost}/>
       <Wall allPosts={allPosts}/>
+      {/* <DisplayComment/> */}
     </div>  
   )
 }
@@ -195,7 +213,7 @@ function App() {
   function handleOnAddPost(postContent){
     const post = {
       content:postContent,
-      comments:["komentarz"]
+      comments:["To jest komentarz do wyświetlenia", 'Atu pewnie drugi komentarz do wyświetlenia', 'A tu catchphrase']
     }
     // console.log('handleOnAddPost, post', post)
     const newPosts = [...posts];
@@ -203,14 +221,14 @@ function App() {
     // console.log("handleAddQuiz, 147, newPosts", newPosts)
     setPosts(newPosts);
   }
-
+  
 
 
   return (
     <div id="homePage">
       <LeftPart id='leftPart'/>
       <MiddlePart id='middlePart' allPosts={posts} onAddPost={handleOnAddPost} />
-      <RightPart id='rightPart' allUsers={users}/>
+      <RightPart id='rightPart' allUsers={users} />
       
 
       
