@@ -53,61 +53,51 @@ function WritePost({onAddPost}){
   );
 }
 
-// let nextId = 3;
-// const initialArtists = [
-//   { id: 0, name: 'Marta Colvin Andrade' },
-//   { id: 1, name: 'Lamidi Olonade Fakeye'},
-//   { id: 2, name: 'Louise Nevelson'},
-// ];
 
-// export default function List() {
-//   const [name, setName] = useState('');
-//   const [artists, setArtists] = useState(
-//     initialArtists
-//   );
 
-//   function handleClick() {
-//     const insertAt = 1; // Could be any index
-//     const nextArtists = [
-//       // Items before the insertion point:
-//       ...artists.slice(0, insertAt),
-//       // New item:
-//       { id: nextId++, name: name },
-//       // Items after the insertion point:
-//       ...artists.slice(insertAt)
-//     ];
-//     setArtists(nextArtists);
-//     setName('');
-//   }
+// function App() {
+//   const [isPopupVisible, setIsPopupVisible] = useState(false);
+
+//   const togglePopup = () => {
+//     setIsPopupVisible(!isPopupVisible);
+//   };
 
 //   return (
-//     <>
-//       <h1>Inspiring sculptors:</h1>
-//       <input
-//         value={name}
-//         onChange={e => setName(e.target.value)}
-//       />
-//       <button onClick={handleClick}>
-//         Insert
-//       </button>
-//       <ul>
-//         {artists.map(artist => (
-//           <li key={artist.id}>{artist.name}</li>
-//         ))}
-//       </ul>
-//     </>
+//     <div>
+//       <button onClick={togglePopup}>Open Popup</button>
+
+//       {isPopupVisible && (
+//         <div className="popup">
+//           <div className="popup-content">
+//             <h2>Popup Window</h2>
+//             <p>This is a popup. Click outside or on close to dismiss.</p>
+//             <button onClick={togglePopup}>Close</button>
+//           </div>
+//         </div>
+//       )}
+//     </div>
 //   );
 // }
 
-function CommentOnWall({riplay}){
+
+function WriteComment(){
   return(
-    <p>{riplay}</p>
+    <div>
+      <input  type="text" placeholder="Write if you really must"/>
+      <button>Add</button>
+    </div>
+  )
+}
+
+function CommentOnWall({reply}){
+  return(
+    <p>{reply}</p>
   )
 }
 
 function DisplayComment({allComments}){
   // const allComments = ["komentarz", "pusia", 'siusia', 'popek']
-  const listOfComments = allComments.map((comment, index)=> {return <CommentOnWall riplay={comment} key={index}/>})
+  const listOfComments = allComments.map((comment, index)=> {return <CommentOnWall reply={comment} key={index}/>})
   return(
     <div>
       {listOfComments}
@@ -117,16 +107,20 @@ function DisplayComment({allComments}){
 
 
 function PostOnWall({post}){
+  const [isPopupVisible, setIsPopupVisible] = useState(false);
 
-  /* <h6 className='postOnWall-UserName'>{user.name}</h6> */
-  /* <p className='postOnWall-UserPost'>{user.post}</p> */
- 
+  const togglePopup = () => {
+    setIsPopupVisible(!isPopupVisible);
+  };
+
+  const popUp = <div> <input  type="text" placeholder="Write if you really must"/> <button onClick={togglePopup}>Add</button> </div>
 
   return(
     <div className="postOnWall">
       <p className='postOnWall-UserPost'>{post.content}</p>
       <button className='postOnWall-LikeBtn'>Like</button>
-      <button className='postOnWall-CommentBtn'>Comment</button>
+      <button className='postOnWall-CommentBtn' onClick={togglePopup} >Comment</button>
+      {isPopupVisible ? popUp : null}
       <DisplayComment allComments={post.comments}/>
       
     </div>
