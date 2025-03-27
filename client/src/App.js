@@ -113,7 +113,7 @@ function PostOnWall({post}){
     setIsPopupVisible(!isPopupVisible);
   };
 
-  const popUp = <div> <input  type="text" placeholder="Write if you really must"/> <button onClick={togglePopup}>Add</button> </div>
+  const popUp = <div className='popup'> <div className='popup-content'><input  type="text" placeholder="Write if you really must"/> <button onClick={togglePopup}>Add</button></div> </div>
 
   return(
     <div className="postOnWall">
