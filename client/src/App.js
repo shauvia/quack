@@ -39,14 +39,11 @@ function QuackBtn(){
 
 function WritePost({onAddPost}){
   const [post, setPost] = useState('');
-  // const [userPosts, setUserPosts] = useState({})
 
   return(
     <div id='writePost'>
     <input  type="text" placeholder="Write if you really must" value={post} onChange={(e) => {
-      console.log('post, userPost', post);
-      setPost(e.target.value); 
-      // setUserPosts({...userPosts, post}); 
+      console.log('post, userPost', post); setPost(e.target.value); 
     }} />
     <button id='writePostBtn' onClick={()=> { onAddPost(post); setPost(''); } }>Quack</button>
     </div>
@@ -80,11 +77,16 @@ function WritePost({onAddPost}){
 // }
 
 
-function WriteComment(){
+function WriteComment({togglePopup, onAddOpinion}){
+  const [comment, setComment] = useState('');
   return(
-    <div>
-      <input  type="text" placeholder="Write if you really must"/>
-      <button>Add</button>
+    <div className='popup'> 
+      <div className='popup-content'>
+        <input  type="text" placeholder="Write if you really must" value={comment} onChange={(e) => {
+        console.log('comment, userComment', comment); setComment(e.target.value)}}/>
+        <button onClick={()=>{onAddOpinion(comment); setComment('');togglePopup()}}>Add</button> {/*tutaj funkcja onAddOpinion bierze tylko comment jako paramentr, więc u parenta Wall jesr funkcja anonimowa, któa bierza argument comment z onAddOpinion i przekazyje do onAddComment, który bierze dwa argumenty: comment i index */}
+        {/* <button onClick={()=> { onAddComment(comment, postIndex); setComment(''); togglePopup()}}>Add</button> */}
+      </div>  
     </div>
   )
 }
@@ -106,14 +108,14 @@ function DisplayComment({allComments}){
 }
 
 
-function PostOnWall({post}){
+function PostOnWall({post, onAddOpinion}){
   const [isPopupVisible, setIsPopupVisible] = useState(false);
 
   const togglePopup = () => {
     setIsPopupVisible(!isPopupVisible);
   };
 
-  const popUp = <div className='popup'> <div className='popup-content'><input  type="text" placeholder="Write if you really must"/> <button onClick={togglePopup}>Add</button></div> </div>
+  const popUp = <WriteComment togglePopup={togglePopup} onAddOpinion={onAddOpinion}/>
 
   return(
     <div className="postOnWall">
@@ -127,10 +129,10 @@ function PostOnWall({post}){
   );
 }
 
-function Wall({allPosts}){
+function Wall({allPosts, onAddComment}){
   // const listOfUserPosts = allUsers.map(person => {return <PostOnWall user={person} key={person.id}/>})
   console.log('allPosts', allPosts)
-  const listOfPosts = allPosts.map((message, index) => {  return  <PostOnWall post={message} key={index}/>})
+  const listOfPosts = allPosts.map((message, index) => {  return  <PostOnWall post={message} key={index} onAddOpinion={(comment) => onAddComment(comment, index)} />})
   return(
     <>
       {listOfPosts}
@@ -181,12 +183,12 @@ function LeftPart({id}){
   )
 }
 
-function MiddlePart({allPosts, id, onAddPost}){
+function MiddlePart({allPosts, id, onAddPost, onAddComment}){
   // console.log("allUsers", allUsers)
   return(
     <div id={id}>
       <WritePost onAddPost={onAddPost}/>
-      <Wall allPosts={allPosts}/>
+      <Wall allPosts={allPosts} onAddComment={onAddComment}/>
       {/* <DisplayComment/> */}
     </div>  
   )
@@ -203,16 +205,26 @@ function RightPart({allUsers, id}){
 function App() {
   // const [users, setUsers] = useState([])
   const [posts, setPosts] = useState([]);
+
+  function handleAddComment(commentContent, postIndex){
+    const newPosts = [...posts];
+    for(let i = 0; i < newPosts.length; i++){
+      if (i===postIndex){
+        newPosts[i].comments.push(commentContent);
+      }
+    }
+    setPosts(newPosts);
+  }
   
   function handleOnAddPost(postContent){
     const post = {
       content:postContent,
-      comments:["To jest komentarz do wyświetlenia", 'Atu pewnie drugi komentarz do wyświetlenia', 'A tu catchphrase']
+      comments:[]
     }
     // console.log('handleOnAddPost, post', post)
     const newPosts = [...posts];
     newPosts.push(post);
-    // console.log("handleAddQuiz, 147, newPosts", newPosts)
+    // console.log("handleAddQuiz, newPosts.comments", newPosts.comments)
     setPosts(newPosts);
   }
   
@@ -221,7 +233,7 @@ function App() {
   return (
     <div id="homePage">
       <LeftPart id='leftPart'/>
-      <MiddlePart id='middlePart' allPosts={posts} onAddPost={handleOnAddPost} />
+      <MiddlePart id='middlePart' allPosts={posts} onAddPost={handleOnAddPost} onAddComment={handleAddComment}/>
       <RightPart id='rightPart' allUsers={users} />
       
 
