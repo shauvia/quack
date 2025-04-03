@@ -33,6 +33,7 @@ body {
 #middlePart{
   grid-area: middlePart;
   outline: 2px solid green;
+  width: 40em;
 }
 
 #rightPart {
@@ -90,10 +91,8 @@ body {
 .postOnWall{
   border: 1px solid gray;
   height: fit-content; /*dopasowuje wysokosc posta do ilości napisanych znakow*/
-  padding-left: 1em;
-  padding-right: 1em;
   position: relative;
-  /* padding-right: 0.5em */
+  background-color: rgba(170, 174, 177);
 } 
 
 .postOnWall-UserName {
@@ -102,12 +101,16 @@ body {
  padding-bottom: 0.75em; */
   padding-top: 0.5em;
   padding-bottom: 0.5em;
+  
 
 }
 .postOnWall-UserPost {
   
-  padding-bottom: 0.5em;
   line-height: 1.6;
+  white-space: normal; /* Allows wrapping */
+  word-break: break-word;
+  margin-left: 1em;
+  margin-bottom: 2em;
 
 }
 .postOnWall-LikeBtn {
@@ -115,19 +118,22 @@ body {
   border-radius: 10px;
   width: 4em;
   height: 2em;
+  margin-left: 1em;
+  margin-bottom: 1.5em;
 }
 .postOnWall-CommentBtn {
   position: absolute;
   right:0;
-  bottom: 0;
+  /* bottom: 0; */
   margin-right: 1em;
+  margin-bottom: 1.5em;
   border: 1px solid gray;
   border-radius: 10px;
   width: 6em;
   height: 2em;
 }
 
-.person{
+.person {
   border:1px solid gray;
   border-radius: 5px;
   width: 20em;
@@ -155,6 +161,31 @@ body {
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   text-align: center;
+}
+
+.comments {
+  white-space: normal; /* Allows wrapping */
+  word-break: break-word;
+  border:1px solid lightgray;
+  /* margin-left: 1em; */
+}
+
+.comment {
+  border: 1px solid gray;
+  height: fit-content;
+  
+}
+
+.comment-UserName {
+  font-weight: bold;
+  margin-top: 0.5em;
+  margin-bottom: 1em;
+  margin-left: 1em;
+}
+
+.comment > p {
+  margin-left: 1em;
+  margin-bottom: 0.5em;
 }
 
 

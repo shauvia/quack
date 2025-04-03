@@ -84,8 +84,7 @@ function WriteComment({togglePopup, onAddOpinion}){
       <div className='popup-content'>
         <input  type="text" placeholder="Write if you really must" value={comment} onChange={(e) => {
         console.log('comment, userComment', comment); setComment(e.target.value)}}/>
-        <button onClick={()=>{onAddOpinion(comment); setComment('');togglePopup()}}>Add</button> {/*tutaj funkcja onAddOpinion bierze tylko comment jako paramentr, więc u parenta Wall jesr funkcja anonimowa, któa bierza argument comment z onAddOpinion i przekazyje do onAddComment, który bierze dwa argumenty: comment i index */}
-        {/* <button onClick={()=> { onAddComment(comment, postIndex); setComment(''); togglePopup()}}>Add</button> */}
+        <button onClick={()=>{onAddOpinion(comment); setComment('');togglePopup()}}>Add</button> {/*tutaj funkcja onAddOpinion bierze tylko comment jako parametr, więc u parenta Wall jesr funkcja anonimowa, któa bierza argument comment z onAddOpinion i przekazyje do onAddComment, który bierze dwa argumenty: comment i index */}
       </div>  
     </div>
   )
@@ -93,15 +92,17 @@ function WriteComment({togglePopup, onAddOpinion}){
 
 function CommentOnWall({reply}){
   return(
-    <p>{reply}</p>
+    <div className='comment'>
+      <h6 className='comment-UserName'>Mroczny Waldek</h6>
+      <p >{reply}</p>
+    </div>
   )
 }
 
 function DisplayComment({allComments}){
-  // const allComments = ["komentarz", "pusia", 'siusia', 'popek']
   const listOfComments = allComments.map((comment, index)=> {return <CommentOnWall reply={comment} key={index}/>})
   return(
-    <div>
+    <div className='comments'>
       {listOfComments}
     </div>
   )
@@ -118,13 +119,14 @@ function PostOnWall({post, onAddOpinion}){
   const popUp = <WriteComment togglePopup={togglePopup} onAddOpinion={onAddOpinion}/>
 
   return(
-    <div className="postOnWall">
-      <p className='postOnWall-UserPost'>{post.content}</p>
-      <button className='postOnWall-LikeBtn'>Like</button>
-      <button className='postOnWall-CommentBtn' onClick={togglePopup} >Comment</button>
+    <div>
+      <div className="postOnWall">
+        <p className='postOnWall-UserPost'>{post.content}</p>
+        <button className='postOnWall-LikeBtn'>Like</button>
+        <button className='postOnWall-CommentBtn' onClick={togglePopup} >Comment</button>
+      </div>
       {isPopupVisible ? popUp : null}
       <DisplayComment allComments={post.comments}/>
-      
     </div>
   );
 }
