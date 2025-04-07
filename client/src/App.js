@@ -28,24 +28,17 @@ let users = [
   }
 ]
 
-function QuackBtn(){
-  return(
-    <>
-      <button>Create Quack</button>
-    </>
-  )
-  
-}
+
 
 function WritePost({onAddPost}){
   const [post, setPost] = useState('');
 
   return(
     <div id='writePost'>
-    <input  type="text" placeholder="Write if you really must" value={post} onChange={(e) => {
-      console.log('post, userPost', post); setPost(e.target.value); 
-    }} />
-    <button id='writePostBtn' onClick={()=> { onAddPost(post); setPost(''); } }>Quack</button>
+      <input  type="text" placeholder="Write if you really must" value={post} onChange={(e) => {
+        console.log('post, userPost', post); setPost(e.target.value); 
+      }} />
+      <button id='writePostBtn' onClick={()=> { onAddPost(post); setPost(''); } }>Quack</button>
     </div>
   );
 }
@@ -84,7 +77,7 @@ function WriteComment({togglePopup, onAddOpinion}){
       <div className='popup-content'>
         <input  type="text" placeholder="Write if you really must" value={comment} onChange={(e) => {
         console.log('comment, userComment', comment); setComment(e.target.value)}}/>
-        <button onClick={()=>{onAddOpinion(comment); setComment('');togglePopup()}}>Add</button> {/*tutaj funkcja onAddOpinion bierze tylko comment jako parametr, więc u parenta Wall jesr funkcja anonimowa, któa bierza argument comment z onAddOpinion i przekazyje do onAddComment, który bierze dwa argumenty: comment i index */}
+        <button onClick={()=>{onAddOpinion(comment); setComment('');togglePopup()}}>Add</button> {/*tutaj funkcja onAddOpinion bierze tylko comment jako parametr, więc u parenta Wall jesr funkcja anonimowa, któa bierze argument comment z onAddOpinion i przekazyje do onAddComment, który bierze dwa argumenty: comment i index */}
       </div>  
     </div>
   )
@@ -142,6 +135,39 @@ function Wall({allPosts, onAddComment}){
   )
 }
 
+function CreateQuack({onAddPost}){
+  const [isPopupVisible, setIsPopupVisible] = useState(false);
+
+  const togglePopup = () => {
+    setIsPopupVisible(!isPopupVisible);
+  };
+
+  const onButtonClik = (post) => {onAddPost(post); togglePopup()};
+  const popUpQuack = <WritePost  onAddPost={onButtonClik}/>
+
+  return(
+    <>
+      {isPopupVisible ? popUpQuack : null}
+      <button onClick={togglePopup}>Create Quack</button>
+      
+    </>
+  ) 
+}
+
+// function CreateQuack({onAddQuack, togglePopup}){
+//   const [quack, setQuack] = useState('');
+
+//   return(
+//     <div className='quackPopup'> 
+//       <div className='quackPopup-content'>
+//         <input  type="text" placeholder="No piszjusz" value={quack} onChange={(e) => {
+//         console.log('quack, setQuack', quack); setQuack(e.target.value)}}/>
+//         <button onClick={()=>{onAddQuack(quack); setQuack('');togglePopup()}}>Add</button> 
+//       </div>  
+//     </div>
+//   );
+// }
+
 function UserList({allUsers}){
   const listItems = allUsers.map(person =>
     <li key={person.id} className='person'>
@@ -175,12 +201,12 @@ function AccountPage(){
   )
 }
 
-function LeftPart({id}){
+function LeftPart({id, onAddPost}){
   return(
     <div id={id}>
       <img src={logo} />
       <p>My user name</p>
-      <QuackBtn/>
+      <CreateQuack onAddPost={onAddPost}/>
     </div>
   )
 }
@@ -191,7 +217,6 @@ function MiddlePart({allPosts, id, onAddPost, onAddComment}){
     <div id={id}>
       <WritePost onAddPost={onAddPost}/>
       <Wall allPosts={allPosts} onAddComment={onAddComment}/>
-      {/* <DisplayComment/> */}
     </div>  
   )
 }
@@ -234,7 +259,7 @@ function App() {
 
   return (
     <div id="homePage">
-      <LeftPart id='leftPart'/>
+      <LeftPart id='leftPart' onAddPost={handleOnAddPost}/>
       <MiddlePart id='middlePart' allPosts={posts} onAddPost={handleOnAddPost} onAddComment={handleAddComment}/>
       <RightPart id='rightPart' allUsers={users} />
       
