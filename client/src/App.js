@@ -30,15 +30,18 @@ let users = [
 
 
 
-function WritePost({onAddPost}){
+function WritePost({onAddPost, isPopup}){
   const [post, setPost] = useState('');
 
   return(
+    // <div className={isPopup ? "popup-style" : "persistent-style"}>
     <div id='writePost'>
+    {/* <> */}
       <input  type="text" placeholder="Write if you really must" value={post} onChange={(e) => {
         console.log('post, userPost', post); setPost(e.target.value); 
       }} />
       <button id='writePostBtn' onClick={()=> { onAddPost(post); setPost(''); } }>Quack</button>
+    {/* </>   */}
     </div>
   );
 }
@@ -73,13 +76,12 @@ function WritePost({onAddPost}){
 function WriteComment({togglePopup, onAddOpinion}){
   const [comment, setComment] = useState('');
   return(
-    <div className='popup'> 
-      <div className='popup-content'>
-        <input  type="text" placeholder="Write if you really must" value={comment} onChange={(e) => {
-        console.log('comment, userComment', comment); setComment(e.target.value)}}/>
-        <button onClick={()=>{onAddOpinion(comment); setComment('');togglePopup()}}>Add</button> {/*tutaj funkcja onAddOpinion bierze tylko comment jako parametr, więc u parenta Wall jesr funkcja anonimowa, któa bierze argument comment z onAddOpinion i przekazyje do onAddComment, który bierze dwa argumenty: comment i index */}
-      </div>  
-    </div>
+    <>
+      <input  type="text" placeholder="Write if you really must" value={comment} onChange={(e) => {
+      console.log('comment, userComment', comment); setComment(e.target.value)}}/>
+      <button onClick={()=>{onAddOpinion(comment); setComment('');togglePopup()}}>Add</button> {/*tutaj funkcja onAddOpinion bierze tylko comment jako parametr, więc u parenta Wall jesr funkcja anonimowa, któa bierze argument comment z onAddOpinion i przekazyje do onAddComment, który bierze dwa argumenty: comment i index */}
+  
+    </>
   )
 }
 
@@ -109,7 +111,7 @@ function PostOnWall({post, onAddOpinion}){
     setIsPopupVisible(!isPopupVisible);
   };
 
-  const popUp = <WriteComment togglePopup={togglePopup} onAddOpinion={onAddOpinion}/>
+  const popUp = (<GenericPopup> <WriteComment togglePopup={togglePopup} onAddOpinion={onAddOpinion}/> </GenericPopup>)
 
   return(
     <div>
@@ -122,6 +124,16 @@ function PostOnWall({post, onAddOpinion}){
       <DisplayComment allComments={post.comments}/>
     </div>
   );
+}
+
+function GenericPopup({children}) {
+  return (
+    <div className='popup'>
+      <div className='popup-content'>
+        {children}
+      </div>
+    </div>
+  )
 }
 
 function Wall({allPosts, onAddComment}){
@@ -143,7 +155,11 @@ function CreateQuack({onAddPost}){
   };
 
   const onButtonClik = (post) => {onAddPost(post); togglePopup()};
-  const popUpQuack = <WritePost  onAddPost={onButtonClik}/>
+  // const popUpQuack = <WritePost  onAddPost={onButtonClik} isPopup={true}/>
+
+  const popUpQuack = (<GenericPopup><WritePost  onAddPost={onButtonClik}/></GenericPopup>) 
+
+  
 
   return(
     <>
@@ -215,7 +231,10 @@ function MiddlePart({allPosts, id, onAddPost, onAddComment}){
   // console.log("allUsers", allUsers)
   return(
     <div id={id}>
-      <WritePost onAddPost={onAddPost}/>
+      {/* <div id='writePost' > */}
+        <WritePost onAddPost={onAddPost}/>
+      {/* </div> */}
+      
       <Wall allPosts={allPosts} onAddComment={onAddComment}/>
     </div>  
   )
@@ -272,3 +291,17 @@ function App() {
 }
 
 export default App;
+
+
+
+// One of your dependencies, babel-preset-react-app, is importing the
+// "@babel/plugin-proposal-private-property-in-object" package without
+// declaring it in its dependencies. This is currently working because
+// "@babel/plugin-proposal-private-property-in-object" is already in your
+// node_modules folder for unrelated reasons, but it may break at any time.
+
+// babel-preset-react-app is part of the create-react-app project, which
+// is not maintianed anymore. It is thus unlikely that this bug will
+// ever be fixed. Add "@babel/plugin-proposal-private-property-in-object" to
+// your devDependencies to work around this error. This will make this message
+// go away.
