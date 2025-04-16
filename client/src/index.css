@@ -25,20 +25,35 @@ body {
 }
 
 #leftPart {
+  position: fixed;
+  width: 33vw;
+  top: 0;
+  left: 0;
   grid-area: leftPart;
   outline: 2px solid blue;
   align-items: end;
-  position: relative
+  height: 100vh;
+  z-index: 1;
 }
+
 #middlePart{
   grid-area: middlePart;
   outline: 2px solid green;
-  width: 40em;
+  width: 33vw;
+  
+  
+  
 }
 
 #rightPart {
   grid-area: rightPart;
   outline: 2px solid pink;
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 33vw;
+  height: 100vh;
+  
 }
 
 #leftPart > img {
@@ -88,11 +103,17 @@ body {
   bottom: 0;
 }
 
+.scrollableWall{
+  overflow-y: auto;
+  height: 100vh;
+}
+
 .postOnWall{
   border: 1px solid gray;
   height: fit-content; /*dopasowuje wysokosc posta do ilości napisanych znakow*/
   position: relative;
   background-color: rgba(170, 174, 177);
+  
 } 
 
 .postOnWall-UserName {
@@ -153,7 +174,8 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1;
+  z-index: 2;
+  
 }
 
 .popup-content {
@@ -162,6 +184,7 @@ body {
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   text-align: center;
+  
 }
 
 .comments {

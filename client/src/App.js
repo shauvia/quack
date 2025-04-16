@@ -141,9 +141,12 @@ function Wall({allPosts, onAddComment}){
   console.log('allPosts', allPosts)
   const listOfPosts = allPosts.map((message, index) => {  return  <PostOnWall post={message} key={index} onAddOpinion={(comment) => onAddComment(comment, index)} />})
   return(
-    <>
-      {listOfPosts}
-    </>
+    <div>
+      {/* <div className='wallContant'> */}
+        {listOfPosts}
+      {/* </div> */}
+      
+    </div>
   )
 }
 
@@ -230,10 +233,8 @@ function LeftPart({id, onAddPost}){
 function MiddlePart({allPosts, id, onAddPost, onAddComment}){
   // console.log("allUsers", allUsers)
   return(
-    <div id={id}>
-      {/* <div id='writePost' > */}
+    <div id={id} /*className='scrollableWall'*/ >
         <WritePost onAddPost={onAddPost}/>
-      {/* </div> */}
       
       <Wall allPosts={allPosts} onAddComment={onAddComment}/>
     </div>  
