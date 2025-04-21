@@ -24,6 +24,42 @@ function listening(){
     res.send('Hello from Jasna Cholera!');
   });
 
+  app.get('/users/tasks', async function (req, res){
+    try{
+      let user = await getUserfromMongo(req);
+      let taskArr = user.tasks
+      console.log("Sending tasks", taskArr.length);
+      res.send(taskArr);
+    } catch(error){
+      if (error.httpCode) {
+        res.status(error.httpCode).send(error.httpMsg);
+      } else {
+        res.status(500).send();
+        console.log('Error on the server, getting task list failed: ', error)
+      } 
+    }  
+  })
+
+  app.get("/userposts", async (req,res) => {
+    try{
+    //   let quizzesList =  await loadDatafromMongo();
+      console.log("server get, data", postList)
+      if (!postList){
+        let qArr = []
+        res.send(qArr);
+      } else {
+        res.send(postList);
+      }
+    } catch(error){
+        if (error.httpCode) {
+          res.status(error.httpCode).send(error.httpMsg);
+        } else {
+          res.status(500).send();
+          console.log('Error on the server, retrieve userposts failed: ', error)
+        }
+      }   
+  });
+
   app.post("/userposts", async (req, res)=> {
     try{
       postList = req.body;

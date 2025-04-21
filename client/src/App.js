@@ -339,9 +339,29 @@ function RightPart({allUsers, id}){
 function App() {
   // const [users, setUsers] = useState([])
   const [posts, setPosts] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch(serverUrl+endpointPost, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        });
+        const jsonData = await response.json();
+        console.log("fetchData", jsonData)
+        setPosts(jsonData);
+      } catch (error) {
+        console.error("fetchData", error);
+      }
+    };
+
+    fetchData();
+  }, []); /*empty array means useEffect runs only once */
   
 
-  async function PostPost(serverUrl, PostEndpoint, userInput){
+  async function postPost(serverUrl, PostEndpoint, userInput){
     console.log("PostPost", serverUrl, PostEndpoint)
     let response = await fetch(serverUrl+PostEndpoint, {
       method: 'POST',
@@ -360,25 +380,7 @@ function App() {
     return content;
   }
 
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     try {
-  //       const response = await fetch(serverUrl+api, {
-  //         method: 'GET',
-  //         headers: {
-  //           'Content-Type': 'application/json',
-  //         }
-  //       });
-  //       const jsonData = await response.json();
-  //       console.log("fetchData", jsonData)
-  //       setQuizzes(jsonData);
-  //     } catch (error) {
-  //       console.error("fetchData", error);
-  //     }
-  //   };
-
-  //   fetchData();
-  // }, []);
+  
 
 
   function handleAddComment(commentContent, postIndex){
@@ -388,6 +390,7 @@ function App() {
         newPosts[i].comments.push(commentContent);
       }
     }
+    postPost(serverUrl, endpointPost, newPosts)
     setPosts(newPosts);
   }
   
@@ -399,7 +402,7 @@ function App() {
     // console.log('handleOnAddPost, post', post)
     const newPosts = [...posts];
     newPosts.push(post);
-    PostPost(serverUrl, endpointPost, newPosts)
+    postPost(serverUrl, endpointPost, newPosts)
     // console.log("handleAddQuiz, newPosts.comments", newPosts.comments)
     setPosts(newPosts);
   }
