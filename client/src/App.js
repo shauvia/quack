@@ -28,6 +28,34 @@ let users = [
   }
 ]
 
+const api = "/api"
+const serverUrl = "http://localhost:3001";
+
+async function pogadajZSerwerem(serverUrl, api){
+  console.log("pogadajZSerwerem", serverUrl, api)
+  // console.log("app.js,addTask URL: ", url+postTask,)
+  let response = await fetch(serverUrl+api, { 
+    method: 'GET' , 
+    // body: JSON.stringify(uInput),
+    headers: {
+      'Content-Type': 'application/json',
+      // "Authorization": JSON.stringify(token)
+    }
+  });
+  if (!response.ok) {
+    let err = new Error('fetch failed, pogadajZSerwerem, response.status: ' +  response.status, ' response.statusText: ' +  response.statusText);
+    throw err;
+  }
+  let content = await response.text(); // dobranie sie do tresci jest asynchroniczne, trzeba czekac; .json() oddżejsonowuje
+  console.log("pogadajZSerwerem", content)
+  return content;
+}
+
+function handlePogadajZSerwerem(){
+  let pogadalam = pogadajZSerwerem(serverUrl, api);
+  console.log("pogadalam", pogadalam)
+}
+
 
 
 function WritePost({onAddPost, isPopup}){
@@ -242,16 +270,97 @@ function MiddlePart({allPosts, id, onAddPost, onAddComment}){
 }
 
 function RightPart({allUsers, id}){
+  
   return(
     <div id={id}>
       <UserList allUsers={allUsers}/>
+      <button onClick={handlePogadajZSerwerem}>Pogadaj z serwerem</button>
     </div>
   )
 }
 
+  // async function updateQuizzesAPI(url, quizApi, uInput){
+  //   console.log("addQuizServer", url,  uInput)
+  //   // console.log("app.js,addTask URL: ", url+postTask,)
+  //   let response = await fetch(url+quizApi, { 
+  //     method: 'POST' , 
+  //     body: JSON.stringify(uInput),
+  //     headers: {
+  //       'Content-Type': 'application/json',
+  //     }
+  //   });
+  //   if (!response.ok) {
+  //     let err = new Error('fetch failed,addQuizServer, response.status: ' +  response.status, ' response.statusText: ' +  response.statusText);
+  //     throw err;
+  //   }
+  //   let content = await response.text(); // dobranie sie do tresci jest asynchroniczne, trzeba czekac; .json() oddżejsonowuje
+  //   console.log("addQuizServer", content)
+  //   return content;
+  // }
+
+// async function addTask(url, users, tasksApi, uInput, token){
+//   console.log("addTask", users, uInput, token)
+//   // console.log("app.js,addTask URL: ", url+postTask,)
+//   let response = await fetch(url+users+tasksApi, { 
+//     method: 'POST' , 
+//     body: JSON.stringify(uInput),
+//     headers: {
+//       'Content-Type': 'application/json',
+//       "Authorization": JSON.stringify(token)
+//     }
+//   });
+//   if (!response.ok) {
+//     let err = new Error('fetch failed, addTask, response.status: ' +  response.status, ' response.statusText: ' +  response.statusText);
+//     throw err;
+//   }
+//   let content = await response.text(); // dobranie sie do tresci jest asynchroniczne, trzeba czekac; .json() oddżejsonowuje
+//   console.log("addTaskContent", content)
+//   return content;
+// }
+
+// async function getTasks(url, users, tasksApi, token){
+//   console.log('getTasks', users, token, tasksApi);
+//   let response = await fetch(url+users+tasksApi, {
+//     method: 'GET',
+//     headers: {
+//       'Content-Type': 'application/json',
+//       "Authorization": JSON.stringify(token)
+//     }
+//   });
+//   if (!response.ok) {
+//     let err = new Error('fetch failed, getTasks, response.status: ' +  response.status, ' response.statusText: ' +  response.statusText);
+//     throw err;
+//   }
+//   let content = await response.json();
+//   console.log("getTaskContent", content)
+//   return content;
+// }
+
 function App() {
   // const [users, setUsers] = useState([])
   const [posts, setPosts] = useState([]);
+  const [quizzes, setQuizzes] = useState('');
+
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     try {
+  //       const response = await fetch(serverUrl+api, {
+  //         method: 'GET',
+  //         headers: {
+  //           'Content-Type': 'application/json',
+  //         }
+  //       });
+  //       const jsonData = await response.json();
+  //       console.log("fetchData", jsonData)
+  //       setQuizzes(jsonData);
+  //     } catch (error) {
+  //       console.error("fetchData", error);
+  //     }
+  //   };
+
+  //   fetchData();
+  // }, []);
+
 
   function handleAddComment(commentContent, postIndex){
     const newPosts = [...posts];
