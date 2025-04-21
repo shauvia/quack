@@ -28,6 +28,7 @@ let users = [
   }
 ]
 
+const endpointPost = '/userposts'
 const api = "/api"
 const serverUrl = "http://localhost:3001";
 
@@ -57,8 +58,7 @@ function handlePogadajZSerwerem(){
 }
 
 
-
-function WritePost({onAddPost, isPopup}){
+function WritePost({onAddPost}){
   const [post, setPost] = useState('');
 
   return(
@@ -339,7 +339,26 @@ function RightPart({allUsers, id}){
 function App() {
   // const [users, setUsers] = useState([])
   const [posts, setPosts] = useState([]);
-  const [quizzes, setQuizzes] = useState('');
+  
+
+  async function PostPost(serverUrl, PostEndpoint, userInput){
+    console.log("PostPost", serverUrl, PostEndpoint)
+    let response = await fetch(serverUrl+PostEndpoint, {
+      method: 'POST',
+      body: JSON.stringify(userInput),
+      headers: {
+        'Content-Type': 'application/json',
+        // "Authorization": JSON.stringify(token)
+      }
+    })
+    if (!response.ok) {
+      let err = new Error('fetch failed, PostPost, response.status: ' +  response.status, ' response.statusText: ' +  response.statusText);
+      throw err;
+    }
+    let content = await response.text(); // dobranie sie do tresci jest asynchroniczne, trzeba czekac; .json() oddżejsonowuje
+    console.log("PostPost", content)
+    return content;
+  }
 
   // useEffect(() => {
   //   const fetchData = async () => {
@@ -380,6 +399,7 @@ function App() {
     // console.log('handleOnAddPost, post', post)
     const newPosts = [...posts];
     newPosts.push(post);
+    PostPost(serverUrl, endpointPost, newPosts)
     // console.log("handleAddQuiz, newPosts.comments", newPosts.comments)
     setPosts(newPosts);
   }
@@ -401,17 +421,3 @@ function App() {
 }
 
 export default App;
-
-
-
-// One of your dependencies, babel-preset-react-app, is importing the
-// "@babel/plugin-proposal-private-property-in-object" package without
-// declaring it in its dependencies. This is currently working because
-// "@babel/plugin-proposal-private-property-in-object" is already in your
-// node_modules folder for unrelated reasons, but it may break at any time.
-
-// babel-preset-react-app is part of the create-react-app project, which
-// is not maintianed anymore. It is thus unlikely that this bug will
-// ever be fixed. Add "@babel/plugin-proposal-private-property-in-object" to
-// your devDependencies to work around this error. This will make this message
-// go away.
