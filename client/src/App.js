@@ -236,11 +236,11 @@ function Footer(){
   )
 }
 
-function AccountPage(){
+function AccountPage({onUserLogged}){
   return(
     <>
       
-      <SignInToQuacker/>
+      <SignInToQuacker onUserLogged={onUserLogged}/>
       <SignUpToQuacker/>
       <img src={logo}/>
 
@@ -339,6 +339,7 @@ function RightPart({allUsers, id}){
 function App() {
   // const [users, setUsers] = useState([])
   const [posts, setPosts] = useState([]);
+  const [isUserLogged, setIsUserLogged] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -380,7 +381,10 @@ function App() {
     return content;
   }
 
-  
+  function handleUserloggedToAccount(){
+    console.log("isUserLogged", isUserLogged);
+    setIsUserLogged(!isUserLogged);
+  }
 
 
   function handleAddComment(commentContent, postIndex){
@@ -399,26 +403,24 @@ function App() {
       content:postContent,
       comments:[]
     }
-    // console.log('handleOnAddPost, post', post)
     const newPosts = [...posts];
     newPosts.push(post);
     postPost(serverUrl, endpointPost, newPosts)
-    // console.log("handleAddQuiz, newPosts.comments", newPosts.comments)
     setPosts(newPosts);
   }
+
+  const homepage = (<div id="homePage"> <LeftPart id='leftPart' onAddPost={handleOnAddPost}/>
+  <MiddlePart id='middlePart' allPosts={posts} onAddPost={handleOnAddPost} onAddComment={handleAddComment}/>
+  <RightPart id='rightPart' allUsers={users} /> </div>)
   
 
 
   return (
-    <div id="homePage">
-      <LeftPart id='leftPart' onAddPost={handleOnAddPost}/>
-      <MiddlePart id='middlePart' allPosts={posts} onAddPost={handleOnAddPost} onAddComment={handleAddComment}/>
-      <RightPart id='rightPart' allUsers={users} />
+    <div>
       
-
+      {isUserLogged ? homepage : <AccountPage onUserLogged = {handleUserloggedToAccount}/>}
       
-      {/* <AccountPage/>
-      <Footer/> */}
+      {/* <Footer/> */}
     </div>
   );
 }

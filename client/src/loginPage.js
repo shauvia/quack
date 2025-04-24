@@ -3,12 +3,12 @@ import './App.css';
 import {Fragment} from 'react';
 
 
-export function SignInToQuacker(){
+export function SignInToQuacker({onUserLogged}){
     return(
         <form>
             <label htmlFor="signIn">Sign in to Q</label>
             <input type="text" id="signIn" defaultValue='Username'/>
-            <button>Log in</button>
+            <button type='button' onClick={()=> onUserLogged()}>Log in</button>
         </form>
     )
 }
@@ -19,7 +19,7 @@ export function SignUpToQuacker(){
         <form>
             <label htmlFor="signIn">Join Q today</label>
             <input type="text" id="signIn" defaultValue='Enter Username'/>
-            <button>Create account</button>
+            <button type='button'>Create account</button>
         </form>
     )
 }
