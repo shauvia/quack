@@ -9,7 +9,7 @@ let users = [
   { id: 0,
     name: "user1",
     picture: "to be shown",
-    post:"Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum."
+    post:"Lorem Ipsum is simply dummy text of the printing and typesetting industry. "
   },
   {
     id: 1,
@@ -28,7 +28,11 @@ let users = [
   }
 ]
 
+const manyComments = '/usercommentlist'
+const oneComment = '/useronecomment'
+const onePost = '/useronepost'
 const endpointPost = '/userposts'
+const manyPosts = '/userpostlist'
 const api = "/api"
 const serverUrl = "http://localhost:3001";
 
@@ -75,39 +79,13 @@ function WritePost({onAddPost}){
 }
 
 
-
-// function App() {
-//   const [isPopupVisible, setIsPopupVisible] = useState(false);
-
-//   const togglePopup = () => {
-//     setIsPopupVisible(!isPopupVisible);
-//   };
-
-//   return (
-//     <div>
-//       <button onClick={togglePopup}>Open Popup</button>
-
-//       {isPopupVisible && (
-//         <div className="popup">
-//           <div className="popup-content">
-//             <h2>Popup Window</h2>
-//             <p>This is a popup. Click outside or on close to dismiss.</p>
-//             <button onClick={togglePopup}>Close</button>
-//           </div>
-//         </div>
-//       )}
-//     </div>
-//   );
-// }
-
-
 function WriteComment({togglePopup, onAddOpinion}){
   const [comment, setComment] = useState('');
   return(
     <>
       <input  type="text" placeholder="Write if you really must" value={comment} onChange={(e) => {
       console.log('comment, userComment', comment); setComment(e.target.value)}}/>
-      <button onClick={()=>{onAddOpinion(comment); setComment('');togglePopup()}}>Add</button> {/*tutaj funkcja onAddOpinion bierze tylko comment jako parametr, więc u parenta Wall jesr funkcja anonimowa, któa bierze argument comment z onAddOpinion i przekazyje do onAddComment, który bierze dwa argumenty: comment i index */}
+      <button onClick={()=>{onAddOpinion(comment); setComment('');togglePopup()}}>Add</button> {/*tutaj funkcja onAddOpinion bierze tylko comment jako parametr, więc u parenta Wall jest funkcja anonimowa, któa bierze argument comment z onAddOpinion i przekazuje do onAddComment, który bierze dwa argumenty: comment i index */}
   
     </>
   )
@@ -123,7 +101,7 @@ function CommentOnWall({reply}){
 }
 
 function DisplayComment({allComments}){
-  const listOfComments = allComments.map((comment, index)=> {return <CommentOnWall reply={comment} key={index}/>})
+  const listOfComments = allComments.map((comment)=> {return <CommentOnWall reply={comment.text} key={comment.id}/>})
   return(
     <div className='comments'>
       {listOfComments}
@@ -133,6 +111,8 @@ function DisplayComment({allComments}){
 
 
 function PostOnWall({post, onAddOpinion}){
+  console.log('PostOnWall, post', post);
+  console.log('PostOnWall, post.comments', post.comments)
   const [isPopupVisible, setIsPopupVisible] = useState(false);
 
   const togglePopup = () => {
@@ -165,15 +145,11 @@ function GenericPopup({children}) {
 }
 
 function Wall({allPosts, onAddComment}){
-  // const listOfUserPosts = allUsers.map(person => {return <PostOnWall user={person} key={person.id}/>})
   console.log('allPosts', allPosts)
-  const listOfPosts = allPosts.map((message, index) => {  return  <PostOnWall post={message} key={index} onAddOpinion={(comment) => onAddComment(comment, index)} />})
+  const listOfPosts = allPosts.map((message, index) => {  console.log('message.id', message.id, 'message', message); return <PostOnWall post={message} key={message.id} onAddOpinion={(comment) => onAddComment(comment, message.id)} />})
   return(
     <div>
-      {/* <div className='wallContant'> */}
         {listOfPosts}
-      {/* </div> */}
-      
     </div>
   )
 }
@@ -188,32 +164,19 @@ function CreateQuack({onAddPost}){
   const onButtonClik = (post) => {onAddPost(post); togglePopup()};
   // const popUpQuack = <WritePost  onAddPost={onButtonClik} isPopup={true}/>
 
-  const popUpQuack = (<GenericPopup><WritePost  onAddPost={onButtonClik}/></GenericPopup>) 
+  const popUpQuack = (<GenericPopup><WritePost onAddPost={onButtonClik}/></GenericPopup>) 
 
   
 
   return(
     <>
       {isPopupVisible ? popUpQuack : null}
-      <button onClick={togglePopup}>Create Quack</button>
+      <button type='button' className='leftPartBtn' id='btnCreateQuack' onClick={togglePopup}>Create Quack</button>
       
     </>
   ) 
 }
 
-// function CreateQuack({onAddQuack, togglePopup}){
-//   const [quack, setQuack] = useState('');
-
-//   return(
-//     <div className='quackPopup'> 
-//       <div className='quackPopup-content'>
-//         <input  type="text" placeholder="No piszjusz" value={quack} onChange={(e) => {
-//         console.log('quack, setQuack', quack); setQuack(e.target.value)}}/>
-//         <button onClick={()=>{onAddQuack(quack); setQuack('');togglePopup()}}>Add</button> 
-//       </div>  
-//     </div>
-//   );
-// }
 
 function UserList({allUsers}){
   const listItems = allUsers.map(person =>
@@ -248,12 +211,13 @@ function AccountPage({onUserLogged}){
   )
 }
 
-function LeftPart({id, onAddPost}){
+function LeftPart({id, onAddPost, onUserLogged}){
   return(
     <div id={id}>
       <img src={logo} />
       <p>My user name</p>
       <CreateQuack onAddPost={onAddPost}/>
+      <button className='leftPartBtn' id='btnLoggedOut' onClick={()=>onUserLogged()}>Log Out</button>
     </div>
   )
 }
@@ -262,7 +226,7 @@ function MiddlePart({allPosts, id, onAddPost, onAddComment}){
   // console.log("allUsers", allUsers)
   return(
     <div id={id} /*className='scrollableWall'*/ >
-        <WritePost onAddPost={onAddPost}/>
+      <WritePost onAddPost={onAddPost}/>
       
       <Wall allPosts={allPosts} onAddComment={onAddComment}/>
     </div>  
@@ -279,72 +243,19 @@ function RightPart({allUsers, id}){
   )
 }
 
-  // async function updateQuizzesAPI(url, quizApi, uInput){
-  //   console.log("addQuizServer", url,  uInput)
-  //   // console.log("app.js,addTask URL: ", url+postTask,)
-  //   let response = await fetch(url+quizApi, { 
-  //     method: 'POST' , 
-  //     body: JSON.stringify(uInput),
-  //     headers: {
-  //       'Content-Type': 'application/json',
-  //     }
-  //   });
-  //   if (!response.ok) {
-  //     let err = new Error('fetch failed,addQuizServer, response.status: ' +  response.status, ' response.statusText: ' +  response.statusText);
-  //     throw err;
-  //   }
-  //   let content = await response.text(); // dobranie sie do tresci jest asynchroniczne, trzeba czekac; .json() oddżejsonowuje
-  //   console.log("addQuizServer", content)
-  //   return content;
-  // }
-
-// async function addTask(url, users, tasksApi, uInput, token){
-//   console.log("addTask", users, uInput, token)
-//   // console.log("app.js,addTask URL: ", url+postTask,)
-//   let response = await fetch(url+users+tasksApi, { 
-//     method: 'POST' , 
-//     body: JSON.stringify(uInput),
-//     headers: {
-//       'Content-Type': 'application/json',
-//       "Authorization": JSON.stringify(token)
-//     }
-//   });
-//   if (!response.ok) {
-//     let err = new Error('fetch failed, addTask, response.status: ' +  response.status, ' response.statusText: ' +  response.statusText);
-//     throw err;
-//   }
-//   let content = await response.text(); // dobranie sie do tresci jest asynchroniczne, trzeba czekac; .json() oddżejsonowuje
-//   console.log("addTaskContent", content)
-//   return content;
-// }
-
-// async function getTasks(url, users, tasksApi, token){
-//   console.log('getTasks', users, token, tasksApi);
-//   let response = await fetch(url+users+tasksApi, {
-//     method: 'GET',
-//     headers: {
-//       'Content-Type': 'application/json',
-//       "Authorization": JSON.stringify(token)
-//     }
-//   });
-//   if (!response.ok) {
-//     let err = new Error('fetch failed, getTasks, response.status: ' +  response.status, ' response.statusText: ' +  response.statusText);
-//     throw err;
-//   }
-//   let content = await response.json();
-//   console.log("getTaskContent", content)
-//   return content;
-// }
 
 function App() {
-  // const [users, setUsers] = useState([])
   const [posts, setPosts] = useState([]);
+  const [post, setPost] = useState({content:''})
+  const [comment, setComment] = useState({text:'', postId: -1})
+  const [comments, setComments] = useState([]);
+  
   const [isUserLogged, setIsUserLogged] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(serverUrl+endpointPost, {
+        const response = await fetch(serverUrl+manyPosts, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -362,54 +273,131 @@ function App() {
   }, []); /*empty array means useEffect runs only once */
   
 
-  async function postPost(serverUrl, PostEndpoint, userInput){
-    console.log("PostPost", serverUrl, PostEndpoint)
-    let response = await fetch(serverUrl+PostEndpoint, {
-      method: 'POST',
-      body: JSON.stringify(userInput),
+// zmienić komunikację z serwerem; wysyłąć jeden post na raz, lista postów na serwerze, tam dodawać do listy postów; sciagać też (get) na jednym poście;
+// To samo dla komentarzy
+
+const fetchData = async () => {
+  try {
+    const response = await fetch(serverUrl+manyPosts, {
+      method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        // "Authorization": JSON.stringify(token)
       }
-    })
-    if (!response.ok) {
-      let err = new Error('fetch failed, PostPost, response.status: ' +  response.status, ' response.statusText: ' +  response.statusText);
-      throw err;
-    }
-    let content = await response.text(); // dobranie sie do tresci jest asynchroniczne, trzeba czekac; .json() oddżejsonowuje
-    console.log("PostPost", content)
-    return content;
+    });
+    const jsonData = await response.json();
+    console.log('data fetched from server', jsonData)
+    return jsonData    
+  } catch (error) {
+    console.error("data fetched from server", error);
   }
+};
+
+// async function fetchComments(serverUrl, manyComments) {
+//   try {
+//     const response = await fetch(serverUrl+manyComments, {
+//       method: 'GET',
+//       headers: {
+//         'Content-Type': 'application/json',
+//       }
+//     });
+//     const jsonData = await response.json();
+//     console.log("fetchComments from server", jsonData)
+//     setComments(jsonData);
+//   } catch (error) {
+//     console.error("fetchComments from server", error);
+//   }
+// };
+
+  // async function postPosts(serverUrl, PostEndpoint, userInput){
+  //   console.log("PostPost", serverUrl, PostEndpoint)
+  //   let response = await fetch(serverUrl+PostEndpoint, {
+  //     method: 'POST',
+  //     body: JSON.stringify(userInput),
+  //     headers: {
+  //       'Content-Type': 'application/json',
+  //       // "Authorization": JSON.stringify(token)
+  //     }
+  //   })
+  //   if (!response.ok) {
+  //     let err = new Error('fetch failed, PostPost, response.status: ' +  response.status, ' response.statusText: ' +  response.statusText);
+  //     throw err;
+  //   }
+  //   let content = await response.text(); // dobranie sie do tresci jest asynchroniczne, trzeba czekac; .json() oddżejsonowuje
+  //   console.log("PostPost", content)
+  //   return content;
+  // }
 
   function handleUserloggedToAccount(){
     console.log("isUserLogged", isUserLogged);
     setIsUserLogged(!isUserLogged);
   }
 
-
-  function handleAddComment(commentContent, postIndex){
-    const newPosts = [...posts];
-    for(let i = 0; i < newPosts.length; i++){
-      if (i===postIndex){
-        newPosts[i].comments.push(commentContent);
+  async function postOnePost(serverUrl, onePost, userPost) {
+    console.log("postOnePost", serverUrl, onePost)
+    let response = await fetch(serverUrl+onePost, {
+      method: 'POST',
+      body: JSON.stringify(userPost),
+      headers: {
+        'Content-Type': 'application/json',
+        // "Authorization": JSON.stringify(token)
       }
+    })
+    if (!response.ok) {
+      let err = new Error('fetch failed, postOnePost, response.status: ' +  response.status, ' response.statusText: ' +  response.statusText);
+      throw err;
     }
-    postPost(serverUrl, endpointPost, newPosts)
-    setPosts(newPosts);
+    let content = await response.text(); // dobranie sie do tresci jest asynchroniczne, trzeba czekac; .json() oddżejsonowuje
+    console.log("one post posted on server", content)
+    return content;
+  }
+
+  async function postOneComment(serverUrl, oneCommentEndpoint, userComment){
+    console.log("postOneComment", serverUrl, onePost)
+    let response = await fetch(serverUrl+oneCommentEndpoint, {
+      method: 'POST',
+      body: JSON.stringify(userComment),
+      headers: {
+        'Content-Type': 'application/json',
+        // "Authorization": JSON.stringify(token)
+      }
+    })
+    if (!response.ok) {
+      let err = new Error('fetch failed, postOneComment, response.status: ' +  response.status, ' response.statusText: ' +  response.statusText);
+      throw err;
+    }
+    let content = await response.text(); // dobranie sie do tresci jest asynchroniczne, trzeba czekac; .json() oddżejsonowuje
+    console.log("one comment posted on server", content)
+    return content;
   }
   
-  function handleOnAddPost(postContent){
-    const post = {
-      content:postContent,
-      comments:[]
-    }
-    const newPosts = [...posts];
-    newPosts.push(post);
-    postPost(serverUrl, endpointPost, newPosts)
-    setPosts(newPosts);
+
+
+  async function handleAddComment(commentContent, postIndex){
+    const newComments = [...comments];
+    let newComment = {...comment};
+    newComment.text = commentContent;
+    newComment.postId = postIndex;
+    await postOneComment(serverUrl, oneComment, newComment);
+    const posts = await fetchData();
+    setPosts(posts);
+
+  }  
+  
+  async function handleOnAddPost(postContent){
+    // const post = {
+    //   content:postContent,
+    //   comments:[]
+    // }
+    let oneNewPost = {...post}
+    oneNewPost.content = postContent;
+    console.log('oneNewPost', oneNewPost);
+    await postOnePost(serverUrl, onePost, oneNewPost)
+    const posts  = await fetchData();
+    setPosts(posts);
+
   }
 
-  const homepage = (<div id="homePage"> <LeftPart id='leftPart' onAddPost={handleOnAddPost}/>
+  const homepage = (<div id="homePage"> <LeftPart id='leftPart' onAddPost={handleOnAddPost} onUserLogged = {handleUserloggedToAccount}/>
   <MiddlePart id='middlePart' allPosts={posts} onAddPost={handleOnAddPost} onAddComment={handleAddComment}/>
   <RightPart id='rightPart' allUsers={users} /> </div>)
   
@@ -417,7 +405,6 @@ function App() {
 
   return (
     <div>
-      
       {isUserLogged ? homepage : <AccountPage onUserLogged = {handleUserloggedToAccount}/>}
       
       {/* <Footer/> */}

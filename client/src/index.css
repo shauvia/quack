@@ -67,17 +67,23 @@ body {
   border-radius: 1.5em; 
 }
 
-#leftPart > button {
+.leftPartBtn {
   width: 15em;
   height: 3.5vh;
   border: 2px solid gray;
   border-radius: 1.5em;
-  /* align-self: flex-end; */
+}
+
+#btnCreateQuack {
   position: absolute;
   bottom: 0; /* Odległość od dołu kolumny */
   right: 0;
+}
+
+#btnLoggedOut{
   
 }
+
 
 #writePost {
   justify-items: right;
