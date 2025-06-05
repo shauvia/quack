@@ -28,6 +28,7 @@ let users = [
   }
 ]
 
+const makeAccEndPoint ='/user'
 const manyComments = '/usercommentlist'
 const oneComment = '/useronecomment'
 const onePost = '/useronepost'
@@ -199,12 +200,12 @@ function Footer(){
   )
 }
 
-function AccountPage({onUserLogged}){
+function AccountPage({onUserLogged, onAddUser}){
   return(
     <>
       
       <SignInToQuacker onUserLogged={onUserLogged}/>
-      <SignUpToQuacker/>
+      <SignUpToQuacker onAddUser={onAddUser}/>
       <img src={logo}/>
 
     </>
@@ -251,6 +252,7 @@ function App() {
   const [comments, setComments] = useState([]);
   
   const [isUserLogged, setIsUserLogged] = useState(false);
+  const [accountIsCreated, setAccountIsCreated] = useState("dontKnow");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -273,9 +275,6 @@ function App() {
   }, []); /*empty array means useEffect runs only once */
   
 
-// zmienić komunikację z serwerem; wysyłąć jeden post na raz, lista postów na serwerze, tam dodawać do listy postów; sciagać też (get) na jednym poście;
-// To samo dla komentarzy
-
 const fetchData = async () => {
   try {
     const response = await fetch(serverUrl+manyPosts, {
@@ -292,45 +291,69 @@ const fetchData = async () => {
   }
 };
 
-// async function fetchComments(serverUrl, manyComments) {
-//   try {
-//     const response = await fetch(serverUrl+manyComments, {
-//       method: 'GET',
-//       headers: {
-//         'Content-Type': 'application/json',
-//       }
-//     });
-//     const jsonData = await response.json();
-//     console.log("fetchComments from server", jsonData)
-//     setComments(jsonData);
-//   } catch (error) {
-//     console.error("fetchComments from server", error);
-//   }
-// };
-
-  // async function postPosts(serverUrl, PostEndpoint, userInput){
-  //   console.log("PostPost", serverUrl, PostEndpoint)
-  //   let response = await fetch(serverUrl+PostEndpoint, {
-  //     method: 'POST',
-  //     body: JSON.stringify(userInput),
-  //     headers: {
-  //       'Content-Type': 'application/json',
-  //       // "Authorization": JSON.stringify(token)
-  //     }
-  //   })
-  //   if (!response.ok) {
-  //     let err = new Error('fetch failed, PostPost, response.status: ' +  response.status, ' response.statusText: ' +  response.statusText);
-  //     throw err;
-  //   }
-  //   let content = await response.text(); // dobranie sie do tresci jest asynchroniczne, trzeba czekac; .json() oddżejsonowuje
-  //   console.log("PostPost", content)
-  //   return content;
-  // }
+  async function createAccount(serverUrl, makeAccEndPoint, accName){
+    try {
+      const response = await fetch(serverUrl+makeAccEndPoint, {
+        method: 'PUT',
+        body: JSON.stringify(accName),
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+      const content = await response.json();
+      // console.log('data fetched from server', jsonData)
+      // return jsonData
+      // let content = await response.text();   
+      console.log("account has been created", content)
+      return content; 
+    } catch (error) {
+      console.error("createAccount", error);
+    }
+  }
 
   function handleUserloggedToAccount(){
     console.log("isUserLogged", isUserLogged);
     setIsUserLogged(!isUserLogged);
   }
+
+
+
+  async function handleOnAddUser(accountName) {
+    let account = await createAccount(serverUrl, makeAccEndPoint, accountName);
+    console.log('handleOnAddUser, account', account);
+    console.log('account.alreadyCreated', account.alreadyCreated)
+
+    setAccountIsCreated(account.alreadyCreated);
+  }
+
+  // sync function createAccountHandler(event){ 
+  //   let accName = document.getElementById('createAccount').value;
+  //   let pass = document.getElementById('loginPass').value;
+  //   console.log("userName: ", accName)
+  //   if (!accName || accName ==""){
+  //     clearDisplayMessages();
+  //     document.getElementById('displayMessage').innerHTML = 'Account username cannot be empty.'
+  //     return;
+  //   }
+  //   if (!pass || pass == "" || pass.length < 5){
+  //     clearDisplayMessages();
+  //     document.getElementById('displayMessage').innerHTML = 'Password must have at least 5 letters.'
+  //     return;
+  //   }
+  //   let account = await createAcc(url, users, accName, pass);
+  //   console.log("tripUrl, accUrl, userName: ", users, accName)
+  //   console.log("account: ", account);
+  //   cleanCreateAccInput()
+  //   if (!account.alreadyCreated){
+  //     clearDisplayMessages();
+  //     showHomePage();
+  //     document.getElementById('displayMessage').innerHTML = 'Your account ' + accName + ' has been set up.';
+      
+  //   } else {
+  //     clearDisplayMessages();
+  //     document.getElementById("displayMessage").innerHTML = "You have already created account: " + accName;
+  //   }   
+  // }
 
   async function postOnePost(serverUrl, onePost, userPost) {
     console.log("postOnePost", serverUrl, onePost)
@@ -405,7 +428,8 @@ const fetchData = async () => {
 
   return (
     <div>
-      {isUserLogged ? homepage : <AccountPage onUserLogged = {handleUserloggedToAccount}/>}
+      {isUserLogged ? homepage : <AccountPage onUserLogged = {handleUserloggedToAccount} onAddUser={handleOnAddUser}/>}
+      {!accountIsCreated ? <p> You have succesfully created account. Please log in to your account </p>: (accountIsCreated === 'dontKnow') ? null :  <p>Account already exists. Use different name to create yours.</p>  }
       
       {/* <Footer/> */}
     </div>
@@ -413,3 +437,42 @@ const fetchData = async () => {
 }
 
 export default App;
+
+
+// function example() {
+//   return condition1 ? value1
+//     : condition2 ? value2
+//     : condition3 ? value3
+//     : value4;
+// }
+
+
+
+// async function createAccountHandler(event){ 
+//   let accName = document.getElementById('createAccount').value;
+//   let pass = document.getElementById('loginPass').value;
+//   console.log("userName: ", accName)
+//   if (!accName || accName ==""){
+//     clearDisplayMessages();
+//     document.getElementById('displayMessage').innerHTML = 'Account username cannot be empty.'
+//     return;
+//   }
+//   if (!pass || pass == "" || pass.length < 5){
+//     clearDisplayMessages();
+//     document.getElementById('displayMessage').innerHTML = 'Password must have at least 5 letters.'
+//     return;
+//   }
+//   let account = await createAcc(url, users, accName, pass);
+//   console.log("tripUrl, accUrl, userName: ", users, accName)
+//   console.log("account: ", account);
+//   cleanCreateAccInput()
+//   if (!account.alreadyCreated){
+//     clearDisplayMessages();
+//     showHomePage();
+//     document.getElementById('displayMessage').innerHTML = 'Your account ' + accName + ' has been set up.';
+    
+//   } else {
+//     clearDisplayMessages();
+//     document.getElementById("displayMessage").innerHTML = "You have already created account: " + accName;
+//   }   
+// }
