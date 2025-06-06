@@ -27,6 +27,21 @@ const client = new MongoClient(uri, {
 // }
 // run().catch(console.dir);
 
+async function findDataMongo(data){
+    try{
+        await client.connect();
+        const database = client.db('quackdata');
+        const users = database.collection('users');
+        let query = {accountName: data}
+        const result = await users.findOne(query);
+        console.log('findDataMongo', result);
+        return result;
+    } finally {
+        await client.close();
+      }
+    
+}
+
 async function saveDataMongo(data) {
     console.log("index.js: I'm in")
     try {
@@ -54,6 +69,7 @@ async function saveDataMongo(data) {
 
   let storage = {
     saveDataMongo: saveDataMongo,
+    findDataMongo: findDataMongo,
     // loadDatafromMongo: loadDatafromMongo,
   };
   

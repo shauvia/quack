@@ -7,6 +7,7 @@ const storage = require('./mongo.js');
 
 
 const saveDataMongo = storage.saveDataMongo;
+const findDataMongo = storage.findDataMongo;
 
 const app = express();
 app.use(cors());
@@ -138,7 +139,9 @@ function listening(){
   app.put('/user', async function(req, res){
     try{
       let userAccName = req.body;
-      let userExists = false;
+      // let userExists = false;
+      let userExists = findDataMongo(userAccName)
+      console.log('userExists',userExists);
       // let userExists = await loadDatafromMongo(userAccName);
       let accCheck = {
         alreadyCreated : false
