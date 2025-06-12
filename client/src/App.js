@@ -28,6 +28,7 @@ let users = [
   }
 ]
 
+const logToAccEndPoint = '/user'
 const makeAccEndPoint ='/user'
 const manyComments = '/usercommentlist'
 const oneComment = '/useronecomment'
@@ -212,13 +213,13 @@ function AccountPage({onUserLogged, onAddUser}){
   )
 }
 
-function LeftPart({id, onAddPost, onUserLogged}){
+function LeftPart({id, onAddPost, onAccountLoggedTo, user}){
   return(
     <div id={id}>
       <img src={logo} />
-      <p>My user name</p>
+      <p>{user.accountName} </p>
       <CreateQuack onAddPost={onAddPost}/>
-      <button className='leftPartBtn' id='btnLoggedOut' onClick={()=>onUserLogged()}>Log Out</button>
+      <button className='leftPartBtn' id='btnLoggedOut' onClick={()=>onAccountLoggedTo()}>Log Out</button>
     </div>
   )
 }
@@ -250,6 +251,7 @@ function App() {
   const [post, setPost] = useState({content:''})
   const [comment, setComment] = useState({text:'', postId: -1})
   const [comments, setComments] = useState([]);
+  const [user, setUser] = useState({});
   
   const [isUserLogged, setIsUserLogged] = useState(false);
   const [accountIsCreated, setAccountIsCreated] = useState("dontKnow");
@@ -311,9 +313,37 @@ const fetchData = async () => {
     }
   }
 
-  function handleUserloggedToAccount(){
+  async function signInToAccount (serverUrl, logToAccEndPoint, accName){
+      try {
+        const response = await fetch(serverUrl+logToAccEndPoint+'/'+accName,{
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        });
+        const content = await response.json();
+        // console.log('data fetched from server', jsonData)
+        // return jsonData
+        // let content = await response.text();   
+        console.log("account has been signed in to", content);
+        return content; 
+    } catch (error) {
+      console.error("signInToAccount", error);
+    }
+    
+  };
+
+  async function handleUserloggedToAccount(login){
     console.log("isUserLogged", isUserLogged);
-    setIsUserLogged(!isUserLogged);
+    let user = await signInToAccount(serverUrl, logToAccEndPoint, login);
+    console.log('handleUserloggedToAccount, user', user)
+    setUser(user);
+    setIsUserLogged(true);
+  }
+
+  function handleAccountLoggedTo() {
+    setUser({});
+    setIsUserLogged(false);
   }
 
 
@@ -326,34 +356,6 @@ const fetchData = async () => {
     setAccountIsCreated(account.alreadyCreated);
   }
 
-  // sync function createAccountHandler(event){ 
-  //   let accName = document.getElementById('createAccount').value;
-  //   let pass = document.getElementById('loginPass').value;
-  //   console.log("userName: ", accName)
-  //   if (!accName || accName ==""){
-  //     clearDisplayMessages();
-  //     document.getElementById('displayMessage').innerHTML = 'Account username cannot be empty.'
-  //     return;
-  //   }
-  //   if (!pass || pass == "" || pass.length < 5){
-  //     clearDisplayMessages();
-  //     document.getElementById('displayMessage').innerHTML = 'Password must have at least 5 letters.'
-  //     return;
-  //   }
-  //   let account = await createAcc(url, users, accName, pass);
-  //   console.log("tripUrl, accUrl, userName: ", users, accName)
-  //   console.log("account: ", account);
-  //   cleanCreateAccInput()
-  //   if (!account.alreadyCreated){
-  //     clearDisplayMessages();
-  //     showHomePage();
-  //     document.getElementById('displayMessage').innerHTML = 'Your account ' + accName + ' has been set up.';
-      
-  //   } else {
-  //     clearDisplayMessages();
-  //     document.getElementById("displayMessage").innerHTML = "You have already created account: " + accName;
-  //   }   
-  // }
 
   async function postOnePost(serverUrl, onePost, userPost) {
     console.log("postOnePost", serverUrl, onePost)
@@ -420,7 +422,7 @@ const fetchData = async () => {
 
   }
 
-  const homepage = (<div id="homePage"> <LeftPart id='leftPart' onAddPost={handleOnAddPost} onUserLogged = {handleUserloggedToAccount}/>
+  const homepage = (<div id="homePage"> <LeftPart id='leftPart' onAddPost={handleOnAddPost} onAccountLoggedTo = {handleAccountLoggedTo} user={user}/>
   <MiddlePart id='middlePart' allPosts={posts} onAddPost={handleOnAddPost} onAddComment={handleAddComment}/>
   <RightPart id='rightPart' allUsers={users} /> </div>)
   

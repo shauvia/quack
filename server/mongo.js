@@ -67,10 +67,26 @@ async function saveDataMongo(data) {
     }
   }
 
+  async function loadDatafromMongo(data){
+    try {
+        await client.connect();
+        const database = client.db('quackdata');
+        const users = database.collection('users');
+        let query = {accountName: data}
+        const allRecords = await users.findOne(query);
+        console.log(`2Records has been read with _id: ${allRecords._id}`);
+        return allRecords;
+  
+      
+    } finally {
+      // await client.close();
+    }
+  }
+
   let storage = {
     saveDataMongo: saveDataMongo,
     findDataMongo: findDataMongo,
-    // loadDatafromMongo: loadDatafromMongo,
+    loadDatafromMongo: loadDatafromMongo,
   };
   
   module.exports = storage;

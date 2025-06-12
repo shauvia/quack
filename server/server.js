@@ -140,7 +140,7 @@ function listening(){
     try{
       let userAccName = req.body;
       // let userExists = false;
-      let userExists = findDataMongo(userAccName)
+      let userExists = await findDataMongo(userAccName)
       console.log('userExists',userExists);
       // let userExists = await loadDatafromMongo(userAccName);
       let accCheck = {
@@ -164,7 +164,69 @@ function listening(){
     } 
   })
 
+  app.get('/user/:accName', async (req, res) => {
+    console.log('/get/user');
+    try {
+      let userAccName = req.params.accName;
+      console.log('getUser userAccName', userAccName)
+      let user = await findDataMongo(userAccName);
+      if (!user) {
+        console.log('/get/user, account retrieval failed.');
+        res.status(404).send('User not found');
+        
+        } else {
+          res.send(user);
+        }    
+
+      // zrobic logowanie do konta i wysylanie uzytkownika i wyswietlanie w kliencie
+
+
+    } catch (error) {
+      res.status(500).send();
+      console.log('Error on the server, account creating failed: ', error);
+    }
+  })
+
   const server = app.listen(port, listening);
+  
+  // async function getUserfromMongo(req){
+  //   let credentials = JSON.parse(req.header("Authorization"));
+  //   let userAcc = credentials.login;
+  //   let encrypted = credentials.encrypted
+  //   const decrypted = crypto.AES.decrypt(encrypted, key).toString(crypto.enc.Utf8)
+  //   errorToThrow = new Error();
+  //   if (userAcc != decrypted){
+  //     errorToThrow.httpCode = 498;
+  //     errorToThrow.httpMsg = "Invalid Token";
+  //     throw  errorToThrow;
+  //   } else {
+  //     let user = await loadDatafromMongo(userAcc);
+  //     if (!user) {
+  //       errorToThrow.httpCode = 404;
+  //       errorToThrow.httlMsg = "No such user";
+  //       throw  errorToThrow;
+  //     } else {
+  //       return user
+  //     }
+  //   }
+  // }
+
+  // try{
+  //   let credentials = JSON.parse(req.header("Authorization"));
+  //   let userAcc = credentials.login;
+  //   let password = credentials.password;
+  //   console.log('Zczytalo', userAcc)
+    
+  //   let accCheck = {
+  //     isCreated : true,
+  //   };
+  //   let user = await loadDatafromMongo(userAcc);
+  //   console.log("Konto: ", user)
+  //   if (!user){
+  //     accCheck.isCreated = false;
+  //     console.log('konto nie istnieje, accCheck: ', accCheck)
+  //     res.send(accCheck);
+  //   } 
 
   
 
