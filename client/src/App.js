@@ -247,11 +247,12 @@ function RightPart({allUsers, id}){
 
 
 function App() {
+  const [user, setUser] = useState({});
   const [posts, setPosts] = useState([]);
   const [post, setPost] = useState({content:''})
   const [comment, setComment] = useState({text:'', postId: -1})
   const [comments, setComments] = useState([]);
-  const [user, setUser] = useState({});
+  
   
   const [isUserLogged, setIsUserLogged] = useState(false);
   const [accountIsCreated, setAccountIsCreated] = useState("dontKnow");
@@ -259,10 +260,12 @@ function App() {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        // let token = user._id;
         const response = await fetch(serverUrl+manyPosts, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
+            // "Authorization": JSON.stringify(token)
           }
         });
         const jsonData = await response.json();
@@ -279,10 +282,13 @@ function App() {
 
 const fetchData = async () => {
   try {
+    // let token = user._id;
+    // console.log('fetchData, token', token)
     const response = await fetch(serverUrl+manyPosts, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
+        // "Authorization": JSON.stringify(token)
       }
     });
     const jsonData = await response.json();
@@ -349,6 +355,7 @@ const fetchData = async () => {
 
 
   async function handleOnAddUser(accountName) {
+    
     let account = await createAccount(serverUrl, makeAccEndPoint, accountName);
     console.log('handleOnAddUser, account', account);
     console.log('account.alreadyCreated', account.alreadyCreated)
@@ -357,14 +364,16 @@ const fetchData = async () => {
   }
 
 
-  async function postOnePost(serverUrl, onePost, userPost) {
-    console.log("postOnePost", serverUrl, onePost)
+  async function postOnePost(serverUrl, onePost, userPost, user) {
+    // przekazać usera tak aby się do niego dobrać
+    console.log("postOnePost, user", serverUrl, onePost, user)
+    let token = user._id;
     let response = await fetch(serverUrl+onePost, {
       method: 'POST',
       body: JSON.stringify(userPost),
       headers: {
         'Content-Type': 'application/json',
-        // "Authorization": JSON.stringify(token)
+        "Authorization": JSON.stringify(token)
       }
     })
     if (!response.ok) {
@@ -376,14 +385,15 @@ const fetchData = async () => {
     return content;
   }
 
-  async function postOneComment(serverUrl, oneCommentEndpoint, userComment){
+  async function postOneComment(serverUrl, oneCommentEndpoint, userComment, user){
+    let token = user._id;
     console.log("postOneComment", serverUrl, onePost)
     let response = await fetch(serverUrl+oneCommentEndpoint, {
       method: 'POST',
       body: JSON.stringify(userComment),
       headers: {
         'Content-Type': 'application/json',
-        // "Authorization": JSON.stringify(token)
+        "Authorization": JSON.stringify(token)
       }
     })
     if (!response.ok) {
@@ -402,7 +412,7 @@ const fetchData = async () => {
     let newComment = {...comment};
     newComment.text = commentContent;
     newComment.postId = postIndex;
-    await postOneComment(serverUrl, oneComment, newComment);
+    await postOneComment(serverUrl, oneComment, newComment, user);
     const posts = await fetchData();
     setPosts(posts);
 
@@ -416,7 +426,7 @@ const fetchData = async () => {
     let oneNewPost = {...post}
     oneNewPost.content = postContent;
     console.log('oneNewPost', oneNewPost);
-    await postOnePost(serverUrl, onePost, oneNewPost)
+    await postOnePost(serverUrl, onePost, oneNewPost, user)
     const posts  = await fetchData();
     setPosts(posts);
 

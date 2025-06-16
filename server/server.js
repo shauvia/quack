@@ -94,10 +94,14 @@ function listening(){
     try{
       let singlePost = {
         id: -1,
-        content: ''
+        content: '',
+        userId: -1
       };
+      let userToken = JSON.parse(req.header("Authorization"));
+      console.log("/useronepost, userToken", userToken)
       singlePost.content = req.body.content;
-      singlePost.id = nextPostId
+      singlePost.userId = userToken;
+      singlePost.id = nextPostId;
       nextPostId = nextPostId +1;
       console.log("singlePost", singlePost)
       postArr.push(singlePost);
@@ -119,9 +123,11 @@ function listening(){
     console.log("/useronecomment")
     try{
       let singleComment = req.body;
+      let userToken = JSON.parse(req.header("Authorization"));
+      singleComment.userId = userToken;
       singleComment.id = nextCommentId;
       nextCommentId = nextCommentId + 1;
-      console.log("singleComment", singleComment)
+      console.log("useronecomment, singleComment", singleComment)
       commentArr.push(singleComment);
       console.log('commentArr', commentArr);
       res.send('OK');
