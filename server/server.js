@@ -6,8 +6,11 @@ const cors = require('cors');
 const storage = require('./mongo.js');
 
 
-const saveDataMongo = storage.saveDataMongo;
 const findDataMongo = storage.findDataMongo;
+const saveDataMongo = storage.saveDataMongo;
+const saveCommentToMongo = storage.saveCommentToMongo;
+const savePostToMongo = storage.savePostToMongo;
+const saveUserToMongo = storage.saveUserToMongo;
 
 const app = express();
 app.use(cors());
@@ -32,21 +35,21 @@ function listening(){
     res.send('Hello from Jasna Cholera!');
   });
 
-  app.get('/users/tasks', async function (req, res){
-    try{
-      let user = await getUserfromMongo(req);
-      let taskArr = user.tasks
-      console.log("Sending tasks", taskArr.length);
-      res.send(taskArr);
-    } catch(error){
-      if (error.httpCode) {
-        res.status(error.httpCode).send(error.httpMsg);
-      } else {
-        res.status(500).send();
-        console.log('Error on the server, getting task list failed: ', error)
-      } 
-    }  
-  })
+  // app.get('/users/tasks', async function (req, res){
+  //   try{
+  //     let user = await getUserfromMongo(req);
+  //     let taskArr = user.tasks
+  //     console.log("Sending tasks", taskArr.length);
+  //     res.send(taskArr);
+  //   } catch(error){
+  //     if (error.httpCode) {
+  //       res.status(error.httpCode).send(error.httpMsg);
+  //     } else {
+  //       res.status(500).send();
+  //       console.log('Error on the server, getting task list failed: ', error)
+  //     } 
+  //   }  
+  // })
 
   
   
@@ -105,6 +108,7 @@ function listening(){
       nextPostId = nextPostId +1;
       console.log("singlePost", singlePost)
       postArr.push(singlePost);
+      await savePostToMongo(singlePost);
       console.log('postArr', postArr);
       res.send('OK');
       // res.send(singlePost);
@@ -129,7 +133,10 @@ function listening(){
       nextCommentId = nextCommentId + 1;
       console.log("useronecomment, singleComment", singleComment)
       commentArr.push(singleComment);
+      console.log('saveCommentToMongo', saveCommentToMongo)
       console.log('commentArr', commentArr);
+      await saveCommentToMongo(singleComment);
+      
       res.send('OK');
       // res.send(singlePost);
     }catch(error){

@@ -42,13 +42,29 @@ async function findDataMongo(data){
     
 }
 
-async function saveDataMongo(data) {
+async function saveCommentToMongo(comment){
+  await saveDataMongo(comment, "comments");
+}
+
+async function savePostToMongo(post){
+  await saveDataMongo(post, "posts");
+}
+
+async function saveUserToMongo(user) {
+   await saveDataMongo(user, "users");
+}
+
+// async function saveDataMongo(data, collectiomnName) {
+//   ...
+// }
+
+async function saveDataMongo(data, collectionName) {
     console.log("index.js: I'm in")
     try {
     await client.connect();
 
       const database = client.db('quackdata');
-      const users = database.collection('users');
+      const dbCollection = database.collection(collectionName);
   
       // console.log(`Saving: ${(util.inspect(data, {depth: null}))}`);
   
@@ -60,7 +76,7 @@ async function saveDataMongo(data) {
     //   await taskList.deleteOne(filter);
       // console.log(`Inserting`);
   
-      const result = await users.insertOne(data);
+      const result = await dbCollection.insertOne(data);
       console.log(`A document was inserted with the _id: ${result.insertedId}`);
     } finally {
       await client.close();
@@ -84,9 +100,11 @@ async function saveDataMongo(data) {
   }
 
   let storage = {
-    saveDataMongo: saveDataMongo,
     findDataMongo: findDataMongo,
     loadDatafromMongo: loadDatafromMongo,
+    saveCommentToMongo: saveCommentToMongo,
+    savePostToMongo: savePostToMongo,
+    saveUserToMongo: saveUserToMongo,
   };
   
   module.exports = storage;
