@@ -11,6 +11,9 @@ const saveDataMongo = storage.saveDataMongo;
 const saveCommentToMongo = storage.saveCommentToMongo;
 const savePostToMongo = storage.savePostToMongo;
 const saveUserToMongo = storage.saveUserToMongo;
+const loadAllPostsfromMongo = storage.loadAllPostsfromMongo;
+const loadAllCommentsfromMongo = storage.loadAllCommentsfromMongo;
+
 
 const app = express();
 app.use(cors());
@@ -53,15 +56,19 @@ function listening(){
 
   
   
-  let postArr = []
-  let nextPostId  = 100;
-  let commentArr = [];
-  let nextCommentId = 1000;
+  // let postArr = []
+  // let nextPostId  = 100;
+  // let commentArr = [];
+  // let nextCommentId = 1000;
 
   app.get('/userpostlist', async (req, res) => {
     try{
+      let userToken = JSON.parse(req.header("Authorization"));
+      let postArr = await loadAllPostsfromMongo(userToken);
+      let commentArr = await loadAllCommentsfromMongo(userToken);
+      console.log("/userpostlist", 'postArr',  postArr, 'commentArr', commentArr )
       let postsAndCommentsArr = [];
-      console.log("/userpostlist, postsAndCommentsArr", postsAndCommentsArr)
+      // console.log("/userpostlist, postsAndCommentsArr", postsAndCommentsArr)
       // if (!postsAndCommentsArr){
       //   let pArr = []
       //   res.send(pArr);
@@ -71,8 +78,9 @@ function listening(){
         post.comments = [];
         postsAndCommentsArr.push(post);
         for (comment of commentArr) {
-          if (post.id === comment.postId){
-                console.log('post.id', post.id, 'comment.postId', comment.postId)
+          console.log('post._id', post._id, 'comment.postId', comment.postId)
+          if (post._id.toString() === comment.postId){
+                // console.log('post.id', post._id, 'comment.postId', comment.postId)
                 post.comments.push(comment);
                 console.log('post.comments', post.comments)
   
@@ -96,7 +104,6 @@ function listening(){
     console.log("/useronepost")
     try{
       let singlePost = {
-        id: -1,
         content: '',
         userId: -1
       };
@@ -104,12 +111,10 @@ function listening(){
       console.log("/useronepost, userToken", userToken)
       singlePost.content = req.body.content;
       singlePost.userId = userToken;
-      singlePost.id = nextPostId;
-      nextPostId = nextPostId +1;
-      console.log("singlePost", singlePost)
-      postArr.push(singlePost);
+      console.log("useronepost, singlePost", singlePost)
+      // postArr.push(singlePost);
       await savePostToMongo(singlePost);
-      console.log('postArr', postArr);
+      // console.log('postArr', postArr);
       res.send('OK');
       // res.send(singlePost);
     }catch(error){
@@ -129,12 +134,12 @@ function listening(){
       let singleComment = req.body;
       let userToken = JSON.parse(req.header("Authorization"));
       singleComment.userId = userToken;
-      singleComment.id = nextCommentId;
-      nextCommentId = nextCommentId + 1;
+      // singleComment.id = nextCommentId;
+      // nextCommentId = nextCommentId + 1;
       console.log("useronecomment, singleComment", singleComment)
-      commentArr.push(singleComment);
-      console.log('saveCommentToMongo', saveCommentToMongo)
-      console.log('commentArr', commentArr);
+      // commentArr.push(singleComment);
+      // console.log('saveCommentToMongo', saveCommentToMongo)
+      // console.log('commentArr', commentArr);
       await saveCommentToMongo(singleComment);
       
       res.send('OK');

@@ -33,6 +33,7 @@ async function findDataMongo(data){
         const database = client.db('quackdata');
         const users = database.collection('users');
         let query = {accountName: data}
+        console.log("findDataMongo, query", query)
         const result = await users.findOne(query);
         console.log('findDataMongo', result);
         return result;
@@ -42,21 +43,13 @@ async function findDataMongo(data){
     
 }
 
-async function saveCommentToMongo(comment){
-  await saveDataMongo(comment, "comments");
-}
 
-async function savePostToMongo(post){
-  await saveDataMongo(post, "posts");
-}
-
-async function saveUserToMongo(user) {
-   await saveDataMongo(user, "users");
-}
 
 // async function saveDataMongo(data, collectiomnName) {
 //   ...
 // }
+
+
 
 async function saveDataMongo(data, collectionName) {
     console.log("index.js: I'm in")
@@ -77,11 +70,29 @@ async function saveDataMongo(data, collectionName) {
       // console.log(`Inserting`);
   
       const result = await dbCollection.insertOne(data);
-      console.log(`A document was inserted with the _id: ${result.insertedId}`);
+      console.log(`saveDataMongo, A document was inserted with the _id: ${result.insertedId}`);
     } finally {
       await client.close();
     }
   }
+
+  async function loadAllRecordsfromMongo(id, collectionName){
+    try {
+        await client.connect();
+        const database = client.db('quackdata');
+        const collection = database.collection(collectionName);
+        let query = {userId : id}
+        console.log("loadAllRecordsfromMongo, query", query)
+        const allRecords = await collection.find(query).toArray();
+        console.log(`Records  from  ${collectionName} has been read with _id: ${allRecords.map(x => x._id)}`);
+        return allRecords;
+  
+      
+    } finally {
+      // await client.close();
+    }
+  }
+  
 
   async function loadDatafromMongo(data){
     try {
@@ -89,6 +100,7 @@ async function saveDataMongo(data, collectionName) {
         const database = client.db('quackdata');
         const users = database.collection('users');
         let query = {accountName: data}
+        console.log("loadDatafromMongo, query", query)
         const allRecords = await users.findOne(query);
         console.log(`2Records has been read with _id: ${allRecords._id}`);
         return allRecords;
@@ -99,12 +111,37 @@ async function saveDataMongo(data, collectionName) {
     }
   }
 
+
+  
+  async function saveCommentToMongo(comment){
+    await saveDataMongo(comment, "comments");
+  }
+
+  async function savePostToMongo(post){
+    await saveDataMongo(post, "posts");
+  }
+
+  async function saveUserToMongo(user) {
+    await saveDataMongo(user, "users");
+  }
+
+  async function loadAllPostsfromMongo(userId){
+    return await loadAllRecordsfromMongo(userId, "posts");
+  }
+
+  async function loadAllCommentsfromMongo(userId){
+    return await loadAllRecordsfromMongo(userId, "comments");
+  }
+
+
   let storage = {
     findDataMongo: findDataMongo,
     loadDatafromMongo: loadDatafromMongo,
     saveCommentToMongo: saveCommentToMongo,
     savePostToMongo: savePostToMongo,
     saveUserToMongo: saveUserToMongo,
+    loadAllPostsfromMongo: loadAllPostsfromMongo,
+    loadAllCommentsfromMongo: loadAllCommentsfromMongo
   };
   
   module.exports = storage;

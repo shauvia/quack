@@ -103,7 +103,7 @@ function CommentOnWall({reply}){
 }
 
 function DisplayComment({allComments}){
-  const listOfComments = allComments.map((comment)=> {return <CommentOnWall reply={comment.text} key={comment.id}/>})
+  const listOfComments = allComments.map((comment)=> {return <CommentOnWall reply={comment.text} key={comment._id}/>})
   return(
     <div className='comments'>
       {listOfComments}
@@ -148,7 +148,7 @@ function GenericPopup({children}) {
 
 function Wall({allPosts, onAddComment}){
   console.log('allPosts', allPosts)
-  const listOfPosts = allPosts.map((message, index) => {  console.log('message.id', message.id, 'message', message); return <PostOnWall post={message} key={message.id} onAddOpinion={(comment) => onAddComment(comment, message.id)} />})
+  const listOfPosts = allPosts.map((message, index) => {  console.log('message.id', message._id, 'message', message); return <PostOnWall post={message} key={message._id} onAddOpinion={(comment) => onAddComment(comment, message._id)} />})
   return(
     <div>
         {listOfPosts}
@@ -257,48 +257,6 @@ function App() {
   const [isUserLogged, setIsUserLogged] = useState(false);
   const [accountIsCreated, setAccountIsCreated] = useState("dontKnow");
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // let token = user._id;
-        const response = await fetch(serverUrl+manyPosts, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            // "Authorization": JSON.stringify(token)
-          }
-        });
-        const jsonData = await response.json();
-        console.log("fetchData", jsonData)
-        setPosts(jsonData);
-      } catch (error) {
-        console.error("fetchData", error);
-      }
-    };
-
-    fetchData();
-  }, []); /*empty array means useEffect runs only once */
-  
-
-const fetchData = async () => {
-  try {
-    // let token = user._id;
-    // console.log('fetchData, token', token)
-    const response = await fetch(serverUrl+manyPosts, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        // "Authorization": JSON.stringify(token)
-      }
-    });
-    const jsonData = await response.json();
-    console.log('data fetched from server', jsonData)
-    return jsonData    
-  } catch (error) {
-    console.error("data fetched from server", error);
-  }
-};
-
   async function createAccount(serverUrl, makeAccEndPoint, accName){
     try {
       const response = await fetch(serverUrl+makeAccEndPoint, {
@@ -339,21 +297,50 @@ const fetchData = async () => {
     
   };
 
-  async function handleUserloggedToAccount(login){
-    console.log("isUserLogged", isUserLogged);
-    let user = await signInToAccount(serverUrl, logToAccEndPoint, login);
-    console.log('handleUserloggedToAccount, user', user)
-    setUser(user);
-    setIsUserLogged(true);
+  // useEffect(() => {
+  //   const fetchData = async (user) => {
+  //     try {
+  //       let token = user._id;
+  //       const response = await fetch(serverUrl+manyPosts, {
+  //         method: 'GET',
+  //         headers: {
+  //           'Content-Type': 'application/json',
+  //           "Authorization": JSON.stringify(token)
+  //         }
+  //       });
+  //       const jsonData = await response.json();
+  //       console.log("fetchData", jsonData)
+  //       setPosts(jsonData);
+  //     } catch (error) {
+  //       console.error("fetchData", error);
+  //     }
+  //   };
+
+  //   fetchData(user);
+  // }, []); /*empty array means useEffect runs only once */
+
+  
+
+const fetchData = async (user) => {
+  try {
+    let token = user._id;
+    console.log('fetchData, token', token)
+    const response = await fetch(serverUrl+manyPosts, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        "Authorization": JSON.stringify(token)
+      }
+    });
+    const jsonData = await response.json();
+    console.log('data fetched from server', jsonData)
+    return jsonData    
+  } catch (error) {
+    console.error("data fetched from server", error);
   }
+};
 
-  function handleAccountLoggedTo() {
-    setUser({});
-    setIsUserLogged(false);
-  }
-
-
-
+  
   async function handleOnAddUser(accountName) {
     
     let account = await createAccount(serverUrl, makeAccEndPoint, accountName);
@@ -362,6 +349,27 @@ const fetchData = async () => {
 
     setAccountIsCreated(account.alreadyCreated);
   }
+  
+
+  async function handleUserloggedToAccount(login){
+    console.log("isUserLogged", isUserLogged);
+    let user = await signInToAccount(serverUrl, logToAccEndPoint, login);
+    setUser(user);
+    let data = await fetchData(user);
+    setPosts(data);
+    console.log('handleUserloggedToAccount, user', user)
+    setIsUserLogged(true);
+  }
+
+
+  function handleAccountLoggedTo() {
+    setUser({});
+    setIsUserLogged(false);
+  }
+
+
+
+  
 
 
   async function postOnePost(serverUrl, onePost, userPost, user) {
@@ -413,7 +421,7 @@ const fetchData = async () => {
     newComment.text = commentContent;
     newComment.postId = postIndex;
     await postOneComment(serverUrl, oneComment, newComment, user);
-    const posts = await fetchData();
+    const posts = await fetchData(user);
     setPosts(posts);
 
   }  
@@ -427,7 +435,7 @@ const fetchData = async () => {
     oneNewPost.content = postContent;
     console.log('oneNewPost', oneNewPost);
     await postOnePost(serverUrl, onePost, oneNewPost, user)
-    const posts  = await fetchData();
+    const posts  = await fetchData(user);
     setPosts(posts);
 
   }
