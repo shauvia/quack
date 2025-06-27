@@ -1,11 +1,12 @@
 require('@dotenvx/dotenvx').config()
+const ObjectId = require('mongodb').ObjectId;
 // require('dotenv').config()
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const storage = require('./mongo.js');
 
-
+const loadUserMongo = storage.loadUserMongo;
 const findDataMongo = storage.findDataMongo;
 const saveDataMongo = storage.saveDataMongo;
 const saveCommentToMongo = storage.saveCommentToMongo;
@@ -13,6 +14,8 @@ const savePostToMongo = storage.savePostToMongo;
 const saveUserToMongo = storage.saveUserToMongo;
 const loadAllPostsfromMongo = storage.loadAllPostsfromMongo;
 const loadAllCommentsfromMongo = storage.loadAllCommentsfromMongo;
+
+
 
 
 const app = express();
@@ -81,6 +84,11 @@ function listening(){
           console.log('post._id', post._id, 'comment.postId', comment.postId)
           if (post._id.toString() === comment.postId){
                 // console.log('post.id', post._id, 'comment.postId', comment.postId)
+                let o_id = new ObjectId(comment.userId);
+                console.log("userpostlist, o_id ", o_id)
+                let user = await loadUserMongo(o_id);
+                console.log("userpostlist, user", user);
+                comment.authorAccName = user.accountName;
                 post.comments.push(comment);
                 console.log('post.comments', post.comments)
   
@@ -99,10 +107,14 @@ function listening(){
     }
   })
 
+  // var id = req.params.gonderi_id;       
+// var o_id = new ObjectId(id);
+// db.test.find({_id:o_id})
+
 
   app.post('/useronepost', async (req, res) => {
     console.log("/useronepost")
-    try{
+    try {
       let singlePost = {
         content: '',
         userId: -1
@@ -112,12 +124,9 @@ function listening(){
       singlePost.content = req.body.content;
       singlePost.userId = userToken;
       console.log("useronepost, singlePost", singlePost)
-      // postArr.push(singlePost);
       await savePostToMongo(singlePost);
-      // console.log('postArr', postArr);
       res.send('OK');
-      // res.send(singlePost);
-    }catch(error){
+    } catch(error){
       if (error.httpCode) {
         res.status(error.httpCode).send(error.httpMsg);
       } else {
@@ -134,17 +143,10 @@ function listening(){
       let singleComment = req.body;
       let userToken = JSON.parse(req.header("Authorization"));
       singleComment.userId = userToken;
-      // singleComment.id = nextCommentId;
-      // nextCommentId = nextCommentId + 1;
       console.log("useronecomment, singleComment", singleComment)
-      // commentArr.push(singleComment);
-      // console.log('saveCommentToMongo', saveCommentToMongo)
-      // console.log('commentArr', commentArr);
       await saveCommentToMongo(singleComment);
-      
       res.send('OK');
-      // res.send(singlePost);
-    }catch(error){
+    } catch(error){
       if (error.httpCode) {
         res.status(error.httpCode).send(error.httpMsg);
       } else {

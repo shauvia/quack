@@ -93,17 +93,17 @@ function WriteComment({togglePopup, onAddOpinion}){
   )
 }
 
-function CommentOnWall({reply}){
+function CommentOnWall({reply, author}){
   return(
     <div className='comment'>
-      <h6 className='comment-UserName'>Mroczny Waldek</h6>
+      <h6 className='comment-UserName'>{author}</h6>
       <p >{reply}</p>
     </div>
   )
 }
 
 function DisplayComment({allComments}){
-  const listOfComments = allComments.map((comment)=> {return <CommentOnWall reply={comment.text} key={comment._id}/>})
+  const listOfComments = allComments.map((comment)=> {return <CommentOnWall reply={comment.text} author={comment.authorAccName} key={comment._id}/>})
   return(
     <div className='comments'>
       {listOfComments}

@@ -43,6 +43,24 @@ async function findDataMongo(data){
     
 }
 
+async function loadUserMongo(data){
+    try{
+        await client.connect();
+        const database = client.db('quackdata');
+        const users = database.collection('users');
+        let query = {_id: data}
+        console.log("loadUserMongo, query", query)
+        const result = await users.findOne(query);
+        console.log('loadUserMongo, result', result);
+        return result;
+    } finally {
+        await client.close();
+      }
+    
+}
+
+
+
 
 
 // async function saveDataMongo(data, collectiomnName) {
@@ -135,6 +153,7 @@ async function saveDataMongo(data, collectionName) {
 
 
   let storage = {
+    loadUserMongo: loadUserMongo,
     findDataMongo: findDataMongo,
     loadDatafromMongo: loadDatafromMongo,
     saveCommentToMongo: saveCommentToMongo,
