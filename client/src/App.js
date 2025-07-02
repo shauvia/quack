@@ -28,6 +28,8 @@ let users = [
   }
 ]
 
+
+const getAllData = '/allPostsAndComments'
 const logToAccEndPoint = '/user'
 const makeAccEndPoint ='/user'
 const manyComments = '/usercommentlist'
@@ -113,8 +115,8 @@ function DisplayComment({allComments}){
 
 
 function PostOnWall({post, onAddOpinion}){
-  console.log('PostOnWall, post', post);
-  console.log('PostOnWall, post.comments', post.comments)
+  // console.log('PostOnWall, post', post);
+  // console.log('PostOnWall, post.comments', post.comments)
   const [isPopupVisible, setIsPopupVisible] = useState(false);
 
   const togglePopup = () => {
@@ -126,6 +128,7 @@ function PostOnWall({post, onAddOpinion}){
   return(
     <div>
       <div className="postOnWall">
+        <p className='postOnWall-UserName'>{post.accName}</p>
         <p className='postOnWall-UserPost'>{post.content}</p>
         <button className='postOnWall-LikeBtn'>Like</button>
         <button className='postOnWall-CommentBtn' onClick={togglePopup} >Comment</button>
@@ -148,7 +151,7 @@ function GenericPopup({children}) {
 
 function Wall({allPosts, onAddComment}){
   console.log('allPosts', allPosts)
-  const listOfPosts = allPosts.map((message, index) => {  console.log('message.id', message._id, 'message', message); return <PostOnWall post={message} key={message._id} onAddOpinion={(comment) => onAddComment(comment, message._id)} />})
+  const listOfPosts = allPosts.map((message, index) => { /* console.log('message.id', message._id, 'message', message);*/ return <PostOnWall post={message} key={message._id} onAddOpinion={(comment) => onAddComment(comment, message._id)} />})
   return(
     <div>
         {listOfPosts}
@@ -320,8 +323,25 @@ function App() {
   // }, []); /*empty array means useEffect runs only once */
 
   
+  const fetchAllData = async () => {
+    try {
+      const response = await fetch(serverUrl+getAllData, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          // "Authorization": JSON.stringify(token)
+        }
+      });
+      const jsonData = await response.json();
+      console.log('data fetched from server', jsonData)
+      return jsonData    
+    } catch (error) {
+      console.error("data fetched from server", error);
+    }
+  };
 
-const fetchData = async (user) => {
+
+  const fetchData = async (user) => {
   try {
     let token = user._id;
     console.log('fetchData, token', token)
@@ -338,7 +358,7 @@ const fetchData = async (user) => {
   } catch (error) {
     console.error("data fetched from server", error);
   }
-};
+  };
 
   
   async function handleOnAddUser(accountName) {
@@ -355,8 +375,9 @@ const fetchData = async (user) => {
     console.log("isUserLogged", isUserLogged);
     let user = await signInToAccount(serverUrl, logToAccEndPoint, login);
     setUser(user);
-    let data = await fetchData(user);
-    setPosts(data);
+    let allData = await fetchAllData();
+    // let data = await fetchData(user);
+    setPosts(allData);
     console.log('handleUserloggedToAccount, user', user)
     setIsUserLogged(true);
   }
@@ -366,10 +387,6 @@ const fetchData = async (user) => {
     setUser({});
     setIsUserLogged(false);
   }
-
-
-
-  
 
 
   async function postOnePost(serverUrl, onePost, userPost, user) {
@@ -421,11 +438,13 @@ const fetchData = async (user) => {
     newComment.text = commentContent;
     newComment.postId = postIndex;
     await postOneComment(serverUrl, oneComment, newComment, user);
-    const posts = await fetchData(user);
-    setPosts(posts);
+    const allPosts = await fetchAllData();
+    // const posts = await fetchData(user);
+    setPosts(allPosts);
 
   }  
   
+
   async function handleOnAddPost(postContent){
     // const post = {
     //   content:postContent,
@@ -435,8 +454,9 @@ const fetchData = async (user) => {
     oneNewPost.content = postContent;
     console.log('oneNewPost', oneNewPost);
     await postOnePost(serverUrl, onePost, oneNewPost, user)
-    const posts  = await fetchData(user);
-    setPosts(posts);
+    const allPosts = await fetchAllData()
+    // const posts  = await fetchData(user);
+    setPosts(allPosts);
 
   }
 

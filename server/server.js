@@ -8,12 +8,13 @@ const storage = require('./mongo.js');
 
 const loadUserMongo = storage.loadUserMongo;
 const findDataMongo = storage.findDataMongo;
-const saveDataMongo = storage.saveDataMongo;
 const saveCommentToMongo = storage.saveCommentToMongo;
 const savePostToMongo = storage.savePostToMongo;
 const saveUserToMongo = storage.saveUserToMongo;
 const loadAllPostsfromMongo = storage.loadAllPostsfromMongo;
-const loadAllCommentsfromMongo = storage.loadAllCommentsfromMongo;
+const loadAllCommentsfromMongo = storage.loadAllCommentsfromMongo;   
+const loadAllUsersPosts = storage.loadAllUsersPosts
+const loadAllUsersComments = storage.loadAllUsersComments;
 
 
 
@@ -64,6 +65,44 @@ function listening(){
   // let commentArr = [];
   // let nextCommentId = 1000;
 
+  app.get ('/allPostsAndComments', async (req, res)=> {
+    try{
+      let allPostsArr = await loadAllUsersPosts();
+      let allCommentsArr = await loadAllUsersComments();
+      let allUsersPostsAndCommentsArr = [];
+      for (oldPost of allPostsArr){
+        var post = {...oldPost}
+        post.comments = [];
+        let o_id = new ObjectId(post.userId);
+        let user = await loadUserMongo(o_id);
+        post.accName = user.accountName;
+        allUsersPostsAndCommentsArr.push(post);
+        for (comment of allCommentsArr) {
+          // console.log('post._id', post._id, 'comment.postId', comment.postId)
+          if (post._id.toString() === comment.postId){
+                // console.log('post.id', post._id, 'comment.postId', comment.postId)
+                let o_id = new ObjectId(comment.userId);
+                // console.log("llPostsAndComments, o_id ", o_id)
+                let user = await loadUserMongo(o_id);
+                // console.log("llPostsAndComments, user", user);
+                comment.authorAccName = user.accountName;
+                post.comments.push(comment);
+                // console.log('post.comments', post.comments)
+  
+            } 
+          }
+      }  
+      res.send(allUsersPostsAndCommentsArr);
+    } catch (error) {
+      if (error.httpCode) {
+        res.status(error.httpCode).send(error.httpMsg);
+      } else {
+        res.status(500).send();
+        console.log('Error on the server, retrieve userposts failed: ', error)
+      }
+    }
+  })
+
   app.get('/userpostlist', async (req, res) => {
     try{
       let userToken = JSON.parse(req.header("Authorization"));
@@ -81,7 +120,7 @@ function listening(){
         post.comments = [];
         postsAndCommentsArr.push(post);
         for (comment of commentArr) {
-          console.log('post._id', post._id, 'comment.postId', comment.postId)
+          // console.log('post._id', post._id, 'comment.postId', comment.postId)
           if (post._id.toString() === comment.postId){
                 // console.log('post.id', post._id, 'comment.postId', comment.postId)
                 let o_id = new ObjectId(comment.userId);
@@ -170,7 +209,7 @@ function listening(){
         let user = {
           accountName: userAccName
         }
-        await saveDataMongo(user);
+        await saveUserToMongo(user);
         res.send(accCheck);
       } else {
         accCheck.alreadyCreated = true;

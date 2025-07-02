@@ -35,7 +35,7 @@ async function findDataMongo(data){
         let query = {accountName: data}
         console.log("findDataMongo, query", query)
         const result = await users.findOne(query);
-        console.log('findDataMongo', result);
+        // console.log('findDataMongo', result);
         return result;
     } finally {
         await client.close();
@@ -49,9 +49,9 @@ async function loadUserMongo(data){
         const database = client.db('quackdata');
         const users = database.collection('users');
         let query = {_id: data}
-        console.log("loadUserMongo, query", query)
+        // console.log("loadUserMongo, query", query)
         const result = await users.findOne(query);
-        console.log('loadUserMongo, result', result);
+        // console.log('loadUserMongo, result', result);
         return result;
     } finally {
         await client.close();
@@ -63,9 +63,35 @@ async function loadUserMongo(data){
 
 
 
-// async function saveDataMongo(data, collectiomnName) {
-//   ...
-// }
+async function loadAllUsersPosts(){
+  try{
+    await client.connect();
+
+      const database = client.db('quackdata');
+      const dbCollection = database.collection('posts');
+      const allRecords = await dbCollection.find().toArray();
+      console.log(`Records  from  ${dbCollection} has been read with _id: ${allRecords.map(x => x._id)}`);
+      return allRecords;
+
+  } finally {
+    await client.close();
+  }
+}
+
+async function loadAllUsersComments(){
+  try{
+    await client.connect();
+
+      const database = client.db('quackdata');
+      const dbCollection = database.collection('comments');
+      const allRecords = await dbCollection.find().toArray();
+      console.log(`Records  from  ${dbCollection} has been read with _id: ${allRecords.map(x => x._id)}`);
+      return allRecords;
+
+  } finally {
+    await client.close();
+  }
+}
 
 
 
@@ -160,7 +186,9 @@ async function saveDataMongo(data, collectionName) {
     savePostToMongo: savePostToMongo,
     saveUserToMongo: saveUserToMongo,
     loadAllPostsfromMongo: loadAllPostsfromMongo,
-    loadAllCommentsfromMongo: loadAllCommentsfromMongo
+    loadAllCommentsfromMongo: loadAllCommentsfromMongo,
+    loadAllUsersPosts: loadAllUsersPosts,
+    loadAllUsersComments: loadAllUsersComments
   };
   
   module.exports = storage;
