@@ -61,6 +61,20 @@ async function loadUserMongo(data){
 
 
 
+async function loadAllUsersFromMongo(){
+  try{
+    await client.connect();
+
+      const database = client.db('quackdata');
+      const dbCollection = database.collection('users');
+      const allRecords = await dbCollection.find().toArray();
+      console.log(`Records  from  ${dbCollection} has been read with _id: ${allRecords.map(x => x._id)}`);
+      return allRecords;
+
+  } finally {
+    await client.close();
+  }
+}
 
 
 async function loadAllUsersPosts(){
@@ -188,7 +202,8 @@ async function saveDataMongo(data, collectionName) {
     loadAllPostsfromMongo: loadAllPostsfromMongo,
     loadAllCommentsfromMongo: loadAllCommentsfromMongo,
     loadAllUsersPosts: loadAllUsersPosts,
-    loadAllUsersComments: loadAllUsersComments
+    loadAllUsersComments: loadAllUsersComments,
+    loadAllUsersFromMongo:loadAllUsersFromMongo
   };
   
   module.exports = storage;

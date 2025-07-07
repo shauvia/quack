@@ -15,6 +15,7 @@ const loadAllPostsfromMongo = storage.loadAllPostsfromMongo;
 const loadAllCommentsfromMongo = storage.loadAllCommentsfromMongo;   
 const loadAllUsersPosts = storage.loadAllUsersPosts
 const loadAllUsersComments = storage.loadAllUsersComments;
+const loadAllUsersFromMongo = storage.loadAllUsersFromMongo;
 
 
 
@@ -65,33 +66,57 @@ function listening(){
   // let commentArr = [];
   // let nextCommentId = 1000;
 
+// const listOfPosts = allPosts.map((message, index) => { /* console.log('message.id', message._id, 'message', message);*/ return <PostOnWall post={message} key={message._id} onAddOpinion={(comment) => onAddComment(comment, message._id)} />})
+
   app.get ('/allPostsAndComments', async (req, res)=> {
     try{
+        function log(msg) {
+          console.log(new Date().getTime(), "allPostsAndComments : ", msg);
+        }
+
+      log("start");
       let allPostsArr = await loadAllUsersPosts();
+      log("after loadAllUsersPosts");
       let allCommentsArr = await loadAllUsersComments();
+      log("after loadAllUsersComments");
+      let allUsers = await loadAllUsersFromMongo();
+      log("after loadAllUsersFromMongo");
       let allUsersPostsAndCommentsArr = [];
       for (oldPost of allPostsArr){
         var post = {...oldPost}
         post.comments = [];
-        let o_id = new ObjectId(post.userId);
-        let user = await loadUserMongo(o_id);
-        post.accName = user.accountName;
+        // let o_id = new ObjectId(post.userId);
+ 
+        function findUser(matchingUser){
+          return post.userId === matchingUser._id.toString();
+        }
+        let usersArr = allUsers.filter(findUser)
+        // console.log('/allPostsAndComments, usersArr', usersArr)
+        // let user = await loadUserMongo(o_id);
+        post.accName = usersArr[0].accountName;
+        // console.log('/allPostsAndComments, post', post)
         allUsersPostsAndCommentsArr.push(post);
         for (comment of allCommentsArr) {
           // console.log('post._id', post._id, 'comment.postId', comment.postId)
           if (post._id.toString() === comment.postId){
                 // console.log('post.id', post._id, 'comment.postId', comment.postId)
-                let o_id = new ObjectId(comment.userId);
+                // let o_id = new ObjectId(comment.userId);
                 // console.log("llPostsAndComments, o_id ", o_id)
-                let user = await loadUserMongo(o_id);
+                // let user = await loadUserMongo(o_id);
                 // console.log("llPostsAndComments, user", user);
-                comment.authorAccName = user.accountName;
+                function findUser(user){
+                return comment.userId === user._id.toString();
+                }
+                let usersArr = allUsers.filter(findUser)
+
+                comment.authorAccName = usersArr[0].accountName;
                 post.comments.push(comment);
                 // console.log('post.comments', post.comments)
   
             } 
           }
       }  
+      log("end");
       res.send(allUsersPostsAndCommentsArr);
     } catch (error) {
       if (error.httpCode) {
