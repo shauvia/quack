@@ -43,30 +43,6 @@ function listening(){
     res.send('Hello from Jasna Cholera!');
   });
 
-  // app.get('/users/tasks', async function (req, res){
-  //   try{
-  //     let user = await getUserfromMongo(req);
-  //     let taskArr = user.tasks
-  //     console.log("Sending tasks", taskArr.length);
-  //     res.send(taskArr);
-  //   } catch(error){
-  //     if (error.httpCode) {
-  //       res.status(error.httpCode).send(error.httpMsg);
-  //     } else {
-  //       res.status(500).send();
-  //       console.log('Error on the server, getting task list failed: ', error)
-  //     } 
-  //   }  
-  // })
-
-  
-  
-  // let postArr = []
-  // let nextPostId  = 100;
-  // let commentArr = [];
-  // let nextCommentId = 1000;
-
-// const listOfPosts = allPosts.map((message, index) => { /* console.log('message.id', message._id, 'message', message);*/ return <PostOnWall post={message} key={message._id} onAddOpinion={(comment) => onAddComment(comment, message._id)} />})
 
   app.get ('/allPostsAndComments', async (req, res)=> {
     try{
@@ -91,19 +67,10 @@ function listening(){
           return post.userId === matchingUser._id.toString();
         }
         let usersArr = allUsers.filter(findUser)
-        // console.log('/allPostsAndComments, usersArr', usersArr)
-        // let user = await loadUserMongo(o_id);
         post.accName = usersArr[0].accountName;
-        // console.log('/allPostsAndComments, post', post)
         allUsersPostsAndCommentsArr.push(post);
         for (comment of allCommentsArr) {
-          // console.log('post._id', post._id, 'comment.postId', comment.postId)
           if (post._id.toString() === comment.postId){
-                // console.log('post.id', post._id, 'comment.postId', comment.postId)
-                // let o_id = new ObjectId(comment.userId);
-                // console.log("llPostsAndComments, o_id ", o_id)
-                // let user = await loadUserMongo(o_id);
-                // console.log("llPostsAndComments, user", user);
                 function findUser(user){
                 return comment.userId === user._id.toString();
                 }
@@ -111,7 +78,6 @@ function listening(){
 
                 comment.authorAccName = usersArr[0].accountName;
                 post.comments.push(comment);
-                // console.log('post.comments', post.comments)
   
             } 
           }
@@ -135,11 +101,6 @@ function listening(){
       let commentArr = await loadAllCommentsfromMongo(userToken);
       console.log("/userpostlist", 'postArr',  postArr, 'commentArr', commentArr )
       let postsAndCommentsArr = [];
-      // console.log("/userpostlist, postsAndCommentsArr", postsAndCommentsArr)
-      // if (!postsAndCommentsArr){
-      //   let pArr = []
-      //   res.send(pArr);
-      // } else { when taking data from database
       for (oldPost of postArr){
         var post = {...oldPost}
         post.comments = [];
@@ -171,9 +132,7 @@ function listening(){
     }
   })
 
-  // var id = req.params.gonderi_id;       
-// var o_id = new ObjectId(id);
-// db.test.find({_id:o_id})
+  
 
 
   app.post('/useronepost', async (req, res) => {
@@ -232,7 +191,8 @@ function listening(){
       };
       if (!userExists) {
         let user = {
-          accountName: userAccName
+          accountName: userAccName,
+          following: []
         }
         await saveUserToMongo(user);
         res.send(accCheck);

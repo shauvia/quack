@@ -6,12 +6,18 @@ const uri = process.env.URI;
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 
 const client = new MongoClient(uri, {
+   maxPoolSize: 200,
   serverApi: {
     version: ServerApiVersion.v1,
     strict: true,
     deprecationErrors: true,
   }
+ 
 });
+
+// const client = new MongoClient(uri, {
+//   maxPoolSize: 200
+// });
 
 // async function run() {
 //   try {
@@ -38,7 +44,7 @@ async function findDataMongo(data){
         // console.log('findDataMongo', result);
         return result;
     } finally {
-        await client.close();
+        // await client.close();
       }
     
 }
@@ -54,7 +60,7 @@ async function loadUserMongo(data){
         // console.log('loadUserMongo, result', result);
         return result;
     } finally {
-        await client.close();
+        // await client.close();
       }
     
 }
@@ -72,7 +78,7 @@ async function loadAllUsersFromMongo(){
       return allRecords;
 
   } finally {
-    await client.close();
+    // await client.close();
   }
 }
 
@@ -88,13 +94,13 @@ async function loadAllUsersPosts(){
       return allRecords;
 
   } finally {
-    await client.close();
+    // await client.close();
   }
 }
 
 async function loadAllUsersComments(){
   try{
-    await client.connect();
+    // await client.connect();
 
       const database = client.db('quackdata');
       const dbCollection = database.collection('comments');
@@ -103,7 +109,7 @@ async function loadAllUsersComments(){
       return allRecords;
 
   } finally {
-    await client.close();
+    // await client.close();
   }
 }
 
@@ -130,7 +136,7 @@ async function saveDataMongo(data, collectionName) {
       const result = await dbCollection.insertOne(data);
       console.log(`saveDataMongo, A document was inserted with the _id: ${result.insertedId}`);
     } finally {
-      await client.close();
+      // await client.close();
     }
   }
 

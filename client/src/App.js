@@ -114,14 +114,27 @@ function DisplayComment({allComments}){
 }
 
 
-function PostOnWall({post, onAddOpinion}){
+function PostOnWall({post, onAddOpinion, user}){
   // console.log('PostOnWall, post', post);
   // console.log('PostOnWall, post.comments', post.comments)
   const [isPopupVisible, setIsPopupVisible] = useState(false);
 
+  let followBtn = (<button className='postOnWall-LikeBtn'>Follow</button>);
+
+  if (user.following.includes(post.userId)) {
+    followBtn = (<button className='postOnWall-LikeBtn'>Unfollow</button>)
+  }
+  
+  
+
+
   const togglePopup = () => {
     setIsPopupVisible(!isPopupVisible);
   };
+
+  const toggleFollowBtn = () =>{
+
+  }
 
   const popUp = (<GenericPopup> <WriteComment togglePopup={togglePopup} onAddOpinion={onAddOpinion}/> </GenericPopup>)
 
@@ -130,7 +143,8 @@ function PostOnWall({post, onAddOpinion}){
       <div className="postOnWall">
         <p className='postOnWall-UserName'>{post.accName}</p>
         <p className='postOnWall-UserPost'>{post.content}</p>
-        <button className='postOnWall-LikeBtn'>Like</button>
+        {/* <button className='postOnWall-LikeBtn'>Follow</button> */}
+        {followBtn}
         <button className='postOnWall-CommentBtn' onClick={togglePopup} >Comment</button>
       </div>
       {isPopupVisible ? popUp : null}
@@ -149,9 +163,9 @@ function GenericPopup({children}) {
   )
 }
 
-function Wall({allPosts, onAddComment}){
+function Wall({allPosts, onAddComment, user}){
   console.log('allPosts', allPosts)
-  const listOfPosts = allPosts.map((message, index) => { /* console.log('message.id', message._id, 'message', message);*/ return <PostOnWall post={message} key={message._id} onAddOpinion={(comment) => onAddComment(comment, message._id)} />})
+  const listOfPosts = allPosts.map((message, index) => { /* console.log('message.id', message._id, 'message', message);*/ return <PostOnWall post={message} key={message._id} user={user} onAddOpinion={(comment) => onAddComment(comment, message._id)} />})
   return(
     <div>
         {listOfPosts}
@@ -227,13 +241,13 @@ function LeftPart({id, onAddPost, onAccountLoggedTo, user}){
   )
 }
 
-function MiddlePart({allPosts, id, onAddPost, onAddComment}){
+function MiddlePart({allPosts, id, onAddPost, onAddComment, user}){
   // console.log("allUsers", allUsers)
   return(
     <div id={id} /*className='scrollableWall'*/ >
       <WritePost onAddPost={onAddPost}/>
       
-      <Wall allPosts={allPosts} onAddComment={onAddComment}/>
+      <Wall allPosts={allPosts} onAddComment={onAddComment} user={user}/>
     </div>  
   )
 }
@@ -461,7 +475,7 @@ function App() {
   }
 
   const homepage = (<div id="homePage"> <LeftPart id='leftPart' onAddPost={handleOnAddPost} onAccountLoggedTo = {handleAccountLoggedTo} user={user}/>
-  <MiddlePart id='middlePart' allPosts={posts} onAddPost={handleOnAddPost} onAddComment={handleAddComment}/>
+  <MiddlePart id='middlePart' allPosts={posts} onAddPost={handleOnAddPost} onAddComment={handleAddComment} user={user}/>
   <RightPart id='rightPart' allUsers={users} /> </div>)
   
 
