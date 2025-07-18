@@ -39,7 +39,7 @@ async function findDataMongo(data){
         const database = client.db('quackdata');
         const users = database.collection('users');
         let query = {accountName: data}
-        console.log("findDataMongo, query", query)
+        // console.log("findDataMongo, query", query)
         const result = await users.findOne(query);
         // console.log('findDataMongo', result);
         return result;
@@ -55,7 +55,7 @@ async function loadUserMongo(data){
         const database = client.db('quackdata');
         const users = database.collection('users');
         let query = {_id: data}
-        // console.log("loadUserMongo, query", query)
+        console.log("loadUserMongo, query", query)
         const result = await users.findOne(query);
         // console.log('loadUserMongo, result', result);
         return result;
@@ -116,29 +116,35 @@ async function loadAllUsersComments(){
 
 
 async function saveDataMongo(data, collectionName) {
-    console.log("index.js: I'm in")
+    console.log("saveDataMongo: I'm in, data", data)
     try {
     await client.connect();
 
       const database = client.db('quackdata');
       const dbCollection = database.collection(collectionName);
-  
+      let query = {_id: data._id};
+      let update = {$set: data}
+      console.log('saveDataMongo, query', query, "update", update)
+   
       // console.log(`Saving: ${(util.inspect(data, {depth: null}))}`);
   
     //   const id = data._id;
     //   console.log('id', id)
     //   const filter = {_id : id};
+
   
       // console.log(`Deleting`);
     //   await taskList.deleteOne(filter);
       // console.log(`Inserting`);
   
-      const result = await dbCollection.insertOne(data);
-      console.log(`saveDataMongo, A document was inserted with the _id: ${result.insertedId}`);
+      const result = await dbCollection.updateOne(query, update,  {upsert: true});
+
+      console.log(`saveDataMongo, A document was inserted with the _id: ${result.upsertedId}`, "result", result);
     } finally {
       // await client.close();
     }
   }
+
 
   async function loadAllRecordsfromMongo(id, collectionName){
     try {

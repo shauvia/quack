@@ -27,8 +27,9 @@ let users = [
     post:"Why do I write in Polish?"
   }
 ]
-
-
+const serverUrl = "http://localhost:3001";
+const getUserEndPoint = '/fetchUser';
+const updateUserEndPoint = '/userupdate'
 const getAllData = '/allPostsAndComments'
 const logToAccEndPoint = '/user'
 const makeAccEndPoint ='/user'
@@ -37,33 +38,32 @@ const oneComment = '/useronecomment'
 const onePost = '/useronepost'
 const endpointPost = '/userposts'
 const manyPosts = '/userpostlist'
-const api = "/api"
-const serverUrl = "http://localhost:3001";
+const api = "/api";
 
-async function pogadajZSerwerem(serverUrl, api){
-  console.log("pogadajZSerwerem", serverUrl, api)
-  // console.log("app.js,addTask URL: ", url+postTask,)
-  let response = await fetch(serverUrl+api, { 
-    method: 'GET' , 
-    // body: JSON.stringify(uInput),
-    headers: {
-      'Content-Type': 'application/json',
-      // "Authorization": JSON.stringify(token)
-    }
-  });
-  if (!response.ok) {
-    let err = new Error('fetch failed, pogadajZSerwerem, response.status: ' +  response.status, ' response.statusText: ' +  response.statusText);
-    throw err;
-  }
-  let content = await response.text(); // dobranie sie do tresci jest asynchroniczne, trzeba czekac; .json() oddżejsonowuje
-  console.log("pogadajZSerwerem", content)
-  return content;
-}
+// async function pogadajZSerwerem(serverUrl, api){
+//   console.log("pogadajZSerwerem", serverUrl, api)
+//   // console.log("app.js,addTask URL: ", url+postTask,)
+//   let response = await fetch(serverUrl+api, { 
+//     method: 'GET' , 
+//     // body: JSON.stringify(uInput),
+//     headers: {
+//       'Content-Type': 'application/json',
+//       // "Authorization": JSON.stringify(token)
+//     }
+//   });
+//   if (!response.ok) {
+//     let err = new Error('fetch failed, pogadajZSerwerem, response.status: ' +  response.status, ' response.statusText: ' +  response.statusText);
+//     throw err;
+//   }
+//   let content = await response.text(); // dobranie sie do tresci jest asynchroniczne, trzeba czekac; .json() oddżejsonowuje
+//   console.log("pogadajZSerwerem", content)
+//   return content;
+// }
 
-function handlePogadajZSerwerem(){
-  let pogadalam = pogadajZSerwerem(serverUrl, api);
-  console.log("pogadalam", pogadalam)
-}
+// function handlePogadajZSerwerem(){
+//   let pogadalam = pogadajZSerwerem(serverUrl, api);
+//   console.log("pogadalam", pogadalam)
+// }
 
 
 function WritePost({onAddPost}){
@@ -114,27 +114,21 @@ function DisplayComment({allComments}){
 }
 
 
-function PostOnWall({post, onAddOpinion, user}){
-  // console.log('PostOnWall, post', post);
+function PostOnWall({post, onAddOpinion, user, onFollow, onUnfollow}){
+  // console.log('PostOnWall, following', user.following, "post authorID", post.userId);
   // console.log('PostOnWall, post.comments', post.comments)
   const [isPopupVisible, setIsPopupVisible] = useState(false);
 
-  let followBtn = (<button className='postOnWall-LikeBtn'>Follow</button>);
+  let followBtn = (<button className='postOnWall-LikeBtn' onClick={()=> onFollow(post.userId)} >Follow</button>);
 
   if (user.following.includes(post.userId)) {
-    followBtn = (<button className='postOnWall-LikeBtn'>Unfollow</button>)
+    followBtn = (<button className='postOnWall-LikeBtn'onClick={()=> onUnfollow(post.userId)} >Unfollow</button>);
   }
   
-  
-
 
   const togglePopup = () => {
     setIsPopupVisible(!isPopupVisible);
   };
-
-  const toggleFollowBtn = () =>{
-
-  }
 
   const popUp = (<GenericPopup> <WriteComment togglePopup={togglePopup} onAddOpinion={onAddOpinion}/> </GenericPopup>)
 
@@ -163,9 +157,9 @@ function GenericPopup({children}) {
   )
 }
 
-function Wall({allPosts, onAddComment, user}){
-  console.log('allPosts', allPosts)
-  const listOfPosts = allPosts.map((message, index) => { /* console.log('message.id', message._id, 'message', message);*/ return <PostOnWall post={message} key={message._id} user={user} onAddOpinion={(comment) => onAddComment(comment, message._id)} />})
+function Wall({allPosts, onAddComment, user, onFollow, onUnfollow}){
+  // console.log('allPosts', allPosts)
+  const listOfPosts = allPosts.map((message, index) => { /* console.log('message.id', message._id, 'message', message);*/ return <PostOnWall post={message} key={message._id} user={user} onUnfollow={onUnfollow} onFollow={onFollow} onAddOpinion={(comment) => onAddComment(comment, message._id)} />})
   return(
     <div>
         {listOfPosts}
@@ -241,13 +235,13 @@ function LeftPart({id, onAddPost, onAccountLoggedTo, user}){
   )
 }
 
-function MiddlePart({allPosts, id, onAddPost, onAddComment, user}){
+function MiddlePart({allPosts, id, onAddPost, onAddComment, user, onUnfollow, onFollow}){
   // console.log("allUsers", allUsers)
   return(
     <div id={id} /*className='scrollableWall'*/ >
       <WritePost onAddPost={onAddPost}/>
       
-      <Wall allPosts={allPosts} onAddComment={onAddComment} user={user}/>
+      <Wall allPosts={allPosts} onAddComment={onAddComment} user={user} onUnfollow={onUnfollow} onFollow={onFollow}/>
     </div>  
   )
 }
@@ -257,7 +251,7 @@ function RightPart({allUsers, id}){
   return(
     <div id={id}>
       <UserList allUsers={allUsers}/>
-      <button onClick={handlePogadajZSerwerem}>Pogadaj z serwerem</button>
+      {/* <button onClick={handlePogadajZSerwerem}>Pogadaj z serwerem</button> */}
     </div>
   )
 }
@@ -374,6 +368,84 @@ function App() {
   }
   };
 
+  async function postOnePost(serverUrl, onePost, userPost, user) {
+    // przekazać usera tak aby się do niego dobrać
+    console.log("postOnePost, user", serverUrl, onePost, user)
+    let token = user._id;
+    let response = await fetch(serverUrl+onePost, {
+      method: 'POST',
+      body: JSON.stringify(userPost),
+      headers: {
+        'Content-Type': 'application/json',
+        "Authorization": JSON.stringify(token)
+      }
+    })
+    if (!response.ok) {
+      let err = new Error('fetch failed, postOnePost, response.status: ' +  response.status, ' response.statusText: ' +  response.statusText);
+      throw err;
+    }
+    let content = await response.json(); // dobranie sie do tresci jest asynchroniczne, trzeba czekac; .json() oddżejsonowuje
+    console.log("one post posted on server", content)
+    return content;
+  }
+
+  async function postOneComment(serverUrl, oneCommentEndpoint, userComment, user){
+    let token = user._id;
+    console.log("postOneComment", serverUrl, onePost)
+    let response = await fetch(serverUrl+oneCommentEndpoint, {
+      method: 'POST',
+      body: JSON.stringify(userComment),
+      headers: {
+        'Content-Type': 'application/json',
+        "Authorization": JSON.stringify(token)
+      }
+    })
+    if (!response.ok) {
+      let err = new Error('fetch failed, postOneComment, response.status: ' +  response.status, ' response.statusText: ' +  response.statusText);
+      throw err;
+    }
+    let content = await response.json(); // dobranie sie do tresci jest asynchroniczne, trzeba czekac; .json() oddżejsonowuje
+    console.log("one comment posted on server", content)
+    return content;
+  }
+
+  async function updateUser(serverUrl, updateUserEndPoint, user){
+    console.log('updateUser, user', user)
+    let token = user._id;
+    console.log("updateUser", serverUrl, updateUserEndPoint)
+    let response = await fetch(serverUrl+updateUserEndPoint, {
+      method: 'POST',
+      body: JSON.stringify(user),
+      headers: {
+        'Content-Type': 'application/json',
+        "Authorization": JSON.stringify(token)
+      }
+    })
+    if (!response.ok) {
+      let err = new Error('fetch failed, updateUser, response.status: ' +  response.status, ' response.statusText: ' +  response.statusText);
+      throw err;
+    }
+    let content = await response.text(); // dobranie sie do tresci jest asynchroniczne, trzeba czekac; .json() oddżejsonowuje
+    console.log("updated user posted on server", content)
+    return content;
+  }
+
+  async function fetchUser(serverUrl, getUserEndPoint, userId){
+    let response = await fetch(serverUrl+getUserEndPoint, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        "Authorization": JSON.stringify(userId)
+      }
+    })
+    if (!response.ok) {
+      let err = new Error('fetch failed, fetchUser, response.status: ' +  response.status, ' response.statusText: ' +  response.statusText);
+      throw err;
+    }
+    let content = await response.json(); // dobranie sie do tresci jest asynchroniczne, trzeba czekac; .json() oddżejsonowuje
+    console.log("fetched user from server", content)
+    return content;
+  }
   
   async function handleOnAddUser(accountName) {
     
@@ -403,49 +475,6 @@ function App() {
   }
 
 
-  async function postOnePost(serverUrl, onePost, userPost, user) {
-    // przekazać usera tak aby się do niego dobrać
-    console.log("postOnePost, user", serverUrl, onePost, user)
-    let token = user._id;
-    let response = await fetch(serverUrl+onePost, {
-      method: 'POST',
-      body: JSON.stringify(userPost),
-      headers: {
-        'Content-Type': 'application/json',
-        "Authorization": JSON.stringify(token)
-      }
-    })
-    if (!response.ok) {
-      let err = new Error('fetch failed, postOnePost, response.status: ' +  response.status, ' response.statusText: ' +  response.statusText);
-      throw err;
-    }
-    let content = await response.text(); // dobranie sie do tresci jest asynchroniczne, trzeba czekac; .json() oddżejsonowuje
-    console.log("one post posted on server", content)
-    return content;
-  }
-
-  async function postOneComment(serverUrl, oneCommentEndpoint, userComment, user){
-    let token = user._id;
-    console.log("postOneComment", serverUrl, onePost)
-    let response = await fetch(serverUrl+oneCommentEndpoint, {
-      method: 'POST',
-      body: JSON.stringify(userComment),
-      headers: {
-        'Content-Type': 'application/json',
-        "Authorization": JSON.stringify(token)
-      }
-    })
-    if (!response.ok) {
-      let err = new Error('fetch failed, postOneComment, response.status: ' +  response.status, ' response.statusText: ' +  response.statusText);
-      throw err;
-    }
-    let content = await response.text(); // dobranie sie do tresci jest asynchroniczne, trzeba czekac; .json() oddżejsonowuje
-    console.log("one comment posted on server", content)
-    return content;
-  }
-  
-
-
   async function handleAddComment(commentContent, postIndex){
     const newComments = [...comments];
     let newComment = {...comment};
@@ -460,10 +489,7 @@ function App() {
   
 
   async function handleOnAddPost(postContent){
-    // const post = {
-    //   content:postContent,
-    //   comments:[]
-    // }
+    
     let oneNewPost = {...post}
     oneNewPost.content = postContent;
     console.log('oneNewPost', oneNewPost);
@@ -474,8 +500,42 @@ function App() {
 
   }
 
+  
+
+  async function handleOnFollow(postUserId){
+    console.log('handleOnFollow, userId', postUserId)
+    let newUser = {...user}
+    // console.log("handleOnFollow, newUser", newUser)
+    let followingArr = [...newUser.following];
+    console.log('followingArr, handleOnFollow(', followingArr);
+    followingArr.push(postUserId);
+    newUser.following = followingArr;
+    console.log("handleOnFollow, newUser", newUser);
+    await updateUser(serverUrl, updateUserEndPoint, newUser);
+    let updatedUser = await fetchUser(serverUrl, getUserEndPoint, newUser._id);
+    setUser(updatedUser);
+  }
+
+  async function handleUnfollow(postUserId){
+    let newUser = {...user};
+    let followingArr1 = [...newUser.following];
+    console.log("handleUnfollow, followingArr1", followingArr1)
+    function findId(IdInArr){
+      console.log("postUserId", postUserId, "IdInArr", IdInArr )
+      if (postUserId !== IdInArr) {
+        return IdInArr
+      }
+    }
+    let arrNotFollowing = followingArr1.filter(findId);
+    console.log( "handleUnFollow, arrNotFollowing", arrNotFollowing)
+    newUser.following = arrNotFollowing;
+    await updateUser(serverUrl, updateUserEndPoint, newUser);
+    let updatedUser = await fetchUser(serverUrl, getUserEndPoint, newUser._id);
+    setUser(updatedUser);
+  }
+
   const homepage = (<div id="homePage"> <LeftPart id='leftPart' onAddPost={handleOnAddPost} onAccountLoggedTo = {handleAccountLoggedTo} user={user}/>
-  <MiddlePart id='middlePart' allPosts={posts} onAddPost={handleOnAddPost} onAddComment={handleAddComment} user={user}/>
+  <MiddlePart id='middlePart' allPosts={posts} onAddPost={handleOnAddPost} onAddComment={handleAddComment} user={user} onFollow={handleOnFollow} onUnfollow={handleUnfollow} />
   <RightPart id='rightPart' allUsers={users} /> </div>)
   
 

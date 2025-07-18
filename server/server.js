@@ -36,27 +36,65 @@ const port = process.env.PORT || 3001 // default is port 3000 (locally) but if t
 function listening(){
     console.log('server runnning');
     // console.log(`runnning on localhost ${port}`);
-  }
+}
 
   app.get('/api', (req, res) => {
     console.log('server runnning');
     res.send('Hello from Jasna Cholera!');
   });
 
+app.post('/userupdate', async (req, res) => {
+  try{
+    let userToken = JSON.parse(req.header("Authorization"));
+    let o_id = new ObjectId(userToken);
+    console.log("userupdate, userToken", userToken )
+    let userToUpdate = req.body;
+    userToUpdate._id = o_id;
+    console.log('/userupdate, userToUpdate', userToUpdate)
+    await saveUserToMongo(userToUpdate);
+    res.send('OK');
+  } catch (error) {
+    res.status(500).send();
+    console.log('Error on the server, posting update failed: ', error);
+  }
+})
+
+app.get('/fetchUser', async (req, res) => {
+  try{
+    // let o_id = new ObjectId(comment.userId);
+    let userToken = JSON.parse(req.header("Authorization"));
+    let o_id = new ObjectId(userToken);
+    console.log('/fetchUser, token', o_id)
+    let user =  await loadUserMongo(o_id);
+    if (!user) {
+        console.log('fetchUser, account retrieval failed.');
+        res.status(404).send('User not found');
+        
+    } else {
+      res.send(user);
+    }    
+    }catch (error) {
+      res.status(500).send();
+      console.log('Error on the server, getting update failed: ', error);
+    } 
+   
+
+  })
+
 
   app.get ('/allPostsAndComments', async (req, res)=> {
     try{
-        function log(msg) {
-          console.log(new Date().getTime(), "allPostsAndComments : ", msg);
-        }
+        // function log(msg) {
+        //   console.log(new Date().getTime(), "allPostsAndComments : ", msg);
+        // }
 
-      log("start");
+      // log("start");
       let allPostsArr = await loadAllUsersPosts();
-      log("after loadAllUsersPosts");
+      // log("after loadAllUsersPosts");
       let allCommentsArr = await loadAllUsersComments();
-      log("after loadAllUsersComments");
+      // log("after loadAllUsersComments");
       let allUsers = await loadAllUsersFromMongo();
-      log("after loadAllUsersFromMongo");
+      // log("after loadAllUsersFromMongo");
       let allUsersPostsAndCommentsArr = [];
       for (oldPost of allPostsArr){
         var post = {...oldPost}
@@ -82,7 +120,7 @@ function listening(){
             } 
           }
       }  
-      log("end");
+      // log("end");
       res.send(allUsersPostsAndCommentsArr);
     } catch (error) {
       if (error.httpCode) {
@@ -230,6 +268,8 @@ function listening(){
       console.log('Error on the server, account creating failed: ', error);
     }
   })
+
+  
 
   const server = app.listen(port, listening);
   
