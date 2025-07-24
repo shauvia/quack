@@ -5,32 +5,33 @@ import {SignInToQuacker, SignUpToQuacker} from './loginPage.js'
 
 import logo from './logo.png';
 
-let users = [
-  { id: 0,
-    name: "user1",
-    picture: "to be shown",
-    post:"Lorem Ipsum is simply dummy text of the printing and typesetting industry. "
-  },
-  {
-    id: 1,
-    name: "user2",
-    picture:"to be shown",
-    post:
-    {
-      content: "Catchphrase",
-      comments: [ "comm1" ]
-    }
-  },
-  {id: 2,
-    name: "user3",
-    picture: "to be shown",
-    post:"Why do I write in Polish?"
-  }
-]
+// let users = [
+//   { id: 0,
+//     name: "user1",
+//     picture: "to be shown",
+//     post:"Lorem Ipsum is simply dummy text of the printing and typesetting industry. "
+//   },
+//   {
+//     id: 1,
+//     name: "user2",
+//     picture:"to be shown",
+//     post:
+//     {
+//       content: "Catchphrase",
+//       comments: [ "comm1" ]
+//     }
+//   },
+//   {id: 2,
+//     name: "user3",
+//     picture: "to be shown",
+//     post:"Why do I write in Polish?"
+//   }
+// ]
 const serverUrl = "http://localhost:3001";
 const getUserEndPoint = '/fetchUser';
 const updateUserEndPoint = '/userupdate'
-const getAllData = '/allPostsAndComments'
+const getAllData = '/allPostsAndComments';
+const getAllUsersEndPoint = '/allUsersEndPoint'
 const logToAccEndPoint = '/user'
 const makeAccEndPoint ='/user'
 const manyComments = '/usercommentlist'
@@ -114,17 +115,10 @@ function DisplayComment({allComments}){
 }
 
 
-function PostOnWall({post, onAddOpinion, user, onFollow, onUnfollow}){
+function PostOnWall({post, onAddOpinion}){
   // console.log('PostOnWall, following', user.following, "post authorID", post.userId);
   // console.log('PostOnWall, post.comments', post.comments)
   const [isPopupVisible, setIsPopupVisible] = useState(false);
-
-  let followBtn = (<button className='postOnWall-LikeBtn' onClick={()=> onFollow(post.userId)} >Follow</button>);
-
-  if (user.following.includes(post.userId)) {
-    followBtn = (<button className='postOnWall-LikeBtn'onClick={()=> onUnfollow(post.userId)} >Unfollow</button>);
-  }
-  
 
   const togglePopup = () => {
     setIsPopupVisible(!isPopupVisible);
@@ -137,8 +131,6 @@ function PostOnWall({post, onAddOpinion, user, onFollow, onUnfollow}){
       <div className="postOnWall">
         <p className='postOnWall-UserName'>{post.accName}</p>
         <p className='postOnWall-UserPost'>{post.content}</p>
-        {/* <button className='postOnWall-LikeBtn'>Follow</button> */}
-        {followBtn}
         <button className='postOnWall-CommentBtn' onClick={togglePopup} >Comment</button>
       </div>
       {isPopupVisible ? popUp : null}
@@ -159,7 +151,7 @@ function GenericPopup({children}) {
 
 function Wall({allPosts, onAddComment, user, onFollow, onUnfollow}){
   // console.log('allPosts', allPosts)
-  const listOfPosts = allPosts.map((message, index) => { /* console.log('message.id', message._id, 'message', message);*/ return <PostOnWall post={message} key={message._id} user={user} onUnfollow={onUnfollow} onFollow={onFollow} onAddOpinion={(comment) => onAddComment(comment, message._id)} />})
+  const listOfPosts = allPosts.map((message, index) => { /* console.log('message.id', message._id, 'message', message);*/ return <PostOnWall post={message} key={message._id} onAddOpinion={(comment) => onAddComment(comment, message._id)} />})
   return(
     <div>
         {listOfPosts}
@@ -190,13 +182,32 @@ function CreateQuack({onAddPost}){
   ) 
 }
 
+function CreateFollowBtn({ personTofollow, user, onFollow, onUnfollow }) {
+  const isFollowing = user.following.includes(personTofollow._id);
 
-function UserList({allUsers}){
+  return (
+    <button
+      className='postOnWall-LikeBtn'
+      onClick={() =>
+        isFollowing ? onUnfollow(personTofollow._id) : onFollow(personTofollow._id)
+      }
+    >
+      {isFollowing ? 'Unfollow' : 'Follow'}
+    </button>
+  );
+}
+
+
+
+function UserList({allUsers, user, onFollow, onUnfollow}){
+
   const listItems = allUsers.map(person =>
-    <li key={person.id} className='person'>
+    <li key={person._id} className='person'>
       <p>
-        {person.name}
+        {person.accountName}
       </p>
+      <CreateFollowBtn personTofollow={person} user={user} onFollow={onFollow} onUnfollow={onUnfollow}/>
+
     </li>
   );
   return (<ul>{listItems}</ul>);
@@ -241,16 +252,16 @@ function MiddlePart({allPosts, id, onAddPost, onAddComment, user, onUnfollow, on
     <div id={id} /*className='scrollableWall'*/ >
       <WritePost onAddPost={onAddPost}/>
       
-      <Wall allPosts={allPosts} onAddComment={onAddComment} user={user} onUnfollow={onUnfollow} onFollow={onFollow}/>
+      <Wall allPosts={allPosts} onAddComment={onAddComment}/>
     </div>  
   )
 }
 
-function RightPart({allUsers, id}){
+function RightPart({allUsers, id, user, onFollow, onUnfollow}){
   
   return(
     <div id={id}>
-      <UserList allUsers={allUsers}/>
+      <UserList allUsers={allUsers} user={user} onFollow={onFollow} onUnfollow={onUnfollow}/>
       {/* <button onClick={handlePogadajZSerwerem}>Pogadaj z serwerem</button> */}
     </div>
   )
@@ -260,6 +271,7 @@ function RightPart({allUsers, id}){
 function App() {
   const [user, setUser] = useState({});
   const [posts, setPosts] = useState([]);
+  const [users, setUsers] = useState({});
   const [post, setPost] = useState({content:''})
   const [comment, setComment] = useState({text:'', postId: -1})
   const [comments, setComments] = useState([]);
@@ -446,6 +458,29 @@ function App() {
     console.log("fetched user from server", content)
     return content;
   }
+
+  async function fetchAllUsers(serverUrl, getAllUsersEndPoint){
+    try {
+      const response = await fetch(serverUrl+getAllUsersEndPoint, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          // "Authorization": JSON.stringify(token)
+        }
+      });
+      const result = await response.json();
+      console.log('all users fetched from server', result)
+      return result;   
+    } catch (error) {
+      console.error("all users fetched from server", error);
+    }
+  };
+  
+  // async function handleOnAllUsers(){
+  //   let allUsers = await fetchAllUsers(serverUrl, getAllUsersEndPoint);
+  //   setUsers(allUsers);
+    
+  // }
   
   async function handleOnAddUser(accountName) {
     
@@ -460,8 +495,11 @@ function App() {
   async function handleUserloggedToAccount(login){
     console.log("isUserLogged", isUserLogged);
     let user = await signInToAccount(serverUrl, logToAccEndPoint, login);
-    setUser(user);
+    let allUsers = await fetchAllUsers(serverUrl, getAllUsersEndPoint);
+    console.log("handleUserloggedToAccount, allUsers", allUsers)
     let allData = await fetchAllData();
+    setUser(user);
+    setUsers(allUsers);
     // let data = await fetchData(user);
     setPosts(allData);
     console.log('handleUserloggedToAccount, user', user)
@@ -516,7 +554,7 @@ function App() {
     setUser(updatedUser);
   }
 
-  async function handleUnfollow(postUserId){
+  async function handleonUnfollow(postUserId){
     let newUser = {...user};
     let followingArr1 = [...newUser.following];
     console.log("handleUnfollow, followingArr1", followingArr1)
@@ -535,8 +573,8 @@ function App() {
   }
 
   const homepage = (<div id="homePage"> <LeftPart id='leftPart' onAddPost={handleOnAddPost} onAccountLoggedTo = {handleAccountLoggedTo} user={user}/>
-  <MiddlePart id='middlePart' allPosts={posts} onAddPost={handleOnAddPost} onAddComment={handleAddComment} user={user} onFollow={handleOnFollow} onUnfollow={handleUnfollow} />
-  <RightPart id='rightPart' allUsers={users} /> </div>)
+  <MiddlePart id='middlePart' allPosts={posts} onAddPost={handleOnAddPost} onAddComment={handleAddComment} user={user} onFollow={handleOnFollow} onUnfollow={handleonUnfollow} />
+  <RightPart id='rightPart' allUsers={users} user={user} onFollow={handleOnFollow} onUnfollow={handleonUnfollow}/> </div>)
   
 
 

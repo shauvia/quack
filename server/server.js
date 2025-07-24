@@ -81,6 +81,20 @@ app.get('/fetchUser', async (req, res) => {
 
   })
 
+  app.get('/allUsersEndPoint', async (req, res) => {
+    try{
+      let allUsers = await loadAllUsersFromMongo();
+      console.log("allUsersEndPoint, users", allUsers)
+      res.send(allUsers);
+    } catch (error) {
+      if (error.httpCode) {
+        res.status(error.httpCode).send(error.httpMsg);
+      } else {
+        res.status(500).send();
+        console.log('Error on the server, retrieve userposts failed: ', error)
+      }
+    }  
+  })
 
   app.get ('/allPostsAndComments', async (req, res)=> {
     try{
