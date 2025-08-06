@@ -5,28 +5,6 @@ import {SignInToQuacker, SignUpToQuacker} from './loginPage.js'
 
 import logo from './logo.png';
 
-// let users = [
-//   { id: 0,
-//     name: "user1",
-//     picture: "to be shown",
-//     post:"Lorem Ipsum is simply dummy text of the printing and typesetting industry. "
-//   },
-//   {
-//     id: 1,
-//     name: "user2",
-//     picture:"to be shown",
-//     post:
-//     {
-//       content: "Catchphrase",
-//       comments: [ "comm1" ]
-//     }
-//   },
-//   {id: 2,
-//     name: "user3",
-//     picture: "to be shown",
-//     post:"Why do I write in Polish?"
-//   }
-// ]
 const serverUrl = "http://localhost:3001";
 const getUserEndPoint = '/fetchUser';
 const updateUserEndPoint = '/userupdate'
@@ -131,6 +109,7 @@ function PostOnWall({post, onAddOpinion}){
       <div className="postOnWall">
         <p className='postOnWall-UserName'>{post.accName}</p>
         <p className='postOnWall-UserPost'>{post.content}</p>
+        <button className='postOnWall-likeBtn' >Like</button>
         <button className='postOnWall-CommentBtn' onClick={togglePopup} >Comment</button>
       </div>
       {isPopupVisible ? popUp : null}
@@ -343,13 +322,14 @@ function App() {
   // }, []); /*empty array means useEffect runs only once */
 
   
-  const fetchAllData = async () => {
+  const fetchAllData = async (user) => {
+    let token = user._id;
     try {
       const response = await fetch(serverUrl+getAllData, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          // "Authorization": JSON.stringify(token)
+          "Authorization": JSON.stringify(token)
         }
       });
       const jsonData = await response.json();
@@ -361,24 +341,7 @@ function App() {
   };
 
 
-  const fetchData = async (user) => {
-  try {
-    let token = user._id;
-    console.log('fetchData, token', token)
-    const response = await fetch(serverUrl+manyPosts, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        "Authorization": JSON.stringify(token)
-      }
-    });
-    const jsonData = await response.json();
-    console.log('data fetched from server', jsonData)
-    return jsonData    
-  } catch (error) {
-    console.error("data fetched from server", error);
-  }
-  };
+  
 
   async function postOnePost(serverUrl, onePost, userPost, user) {
     // przekazać usera tak aby się do niego dobrać
@@ -396,7 +359,7 @@ function App() {
       let err = new Error('fetch failed, postOnePost, response.status: ' +  response.status, ' response.statusText: ' +  response.statusText);
       throw err;
     }
-    let content = await response.json(); // dobranie sie do tresci jest asynchroniczne, trzeba czekac; .json() oddżejsonowuje
+    let content = await response.text(); // dobranie sie do tresci jest asynchroniczne, trzeba czekac; .json() oddżejsonowuje
     console.log("one post posted on server", content)
     return content;
   }
@@ -416,7 +379,7 @@ function App() {
       let err = new Error('fetch failed, postOneComment, response.status: ' +  response.status, ' response.statusText: ' +  response.statusText);
       throw err;
     }
-    let content = await response.json(); // dobranie sie do tresci jest asynchroniczne, trzeba czekac; .json() oddżejsonowuje
+    let content = await response.text(); // dobranie sie do tresci jest asynchroniczne, trzeba czekac; .json() oddżejsonowuje
     console.log("one comment posted on server", content)
     return content;
   }
@@ -476,11 +439,6 @@ function App() {
     }
   };
   
-  // async function handleOnAllUsers(){
-  //   let allUsers = await fetchAllUsers(serverUrl, getAllUsersEndPoint);
-  //   setUsers(allUsers);
-    
-  // }
   
   async function handleOnAddUser(accountName) {
     
@@ -491,13 +449,17 @@ function App() {
     setAccountIsCreated(account.alreadyCreated);
   }
   
+  
 
   async function handleUserloggedToAccount(login){
     console.log("isUserLogged", isUserLogged);
     let user = await signInToAccount(serverUrl, logToAccEndPoint, login);
     let allUsers = await fetchAllUsers(serverUrl, getAllUsersEndPoint);
     console.log("handleUserloggedToAccount, allUsers", allUsers)
-    let allData = await fetchAllData();
+    let allData = await fetchAllData(user);
+
+    // let sortedPostsArr = getSortedPostsByDate(user, allData);
+    // console.log('outside loop, concat postsInOrder', sortedPosts)
     setUser(user);
     setUsers(allUsers);
     // let data = await fetchData(user);
@@ -505,6 +467,11 @@ function App() {
     console.log('handleUserloggedToAccount, user', user)
     setIsUserLogged(true);
   }
+
+  
+
+  // const array3 = array1.concat(array2);
+  
 
 
   function handleAccountLoggedTo() {
@@ -519,7 +486,7 @@ function App() {
     newComment.text = commentContent;
     newComment.postId = postIndex;
     await postOneComment(serverUrl, oneComment, newComment, user);
-    const allPosts = await fetchAllData();
+    const allPosts = await fetchAllData(user);
     // const posts = await fetchData(user);
     setPosts(allPosts);
 
@@ -532,7 +499,7 @@ function App() {
     oneNewPost.content = postContent;
     console.log('oneNewPost', oneNewPost);
     await postOnePost(serverUrl, onePost, oneNewPost, user)
-    const allPosts = await fetchAllData()
+    const allPosts = await fetchAllData(user)
     // const posts  = await fetchData(user);
     setPosts(allPosts);
 
@@ -551,7 +518,10 @@ function App() {
     console.log("handleOnFollow, newUser", newUser);
     await updateUser(serverUrl, updateUserEndPoint, newUser);
     let updatedUser = await fetchUser(serverUrl, getUserEndPoint, newUser._id);
+    let allPosts = await fetchAllData(user);
+    // let sortedPostsArr = getSortedPostsByDate(updatedUser, allPosts);
     setUser(updatedUser);
+    setPosts(allPosts);
   }
 
   async function handleonUnfollow(postUserId){
@@ -569,7 +539,9 @@ function App() {
     newUser.following = arrNotFollowing;
     await updateUser(serverUrl, updateUserEndPoint, newUser);
     let updatedUser = await fetchUser(serverUrl, getUserEndPoint, newUser._id);
+    let allPosts = await fetchAllData(user);
     setUser(updatedUser);
+    setPosts(allPosts);
   }
 
   const homepage = (<div id="homePage"> <LeftPart id='leftPart' onAddPost={handleOnAddPost} onAccountLoggedTo = {handleAccountLoggedTo} user={user}/>
@@ -591,40 +563,4 @@ function App() {
 export default App;
 
 
-// function example() {
-//   return condition1 ? value1
-//     : condition2 ? value2
-//     : condition3 ? value3
-//     : value4;
-// }
-
-
-
-// async function createAccountHandler(event){ 
-//   let accName = document.getElementById('createAccount').value;
-//   let pass = document.getElementById('loginPass').value;
-//   console.log("userName: ", accName)
-//   if (!accName || accName ==""){
-//     clearDisplayMessages();
-//     document.getElementById('displayMessage').innerHTML = 'Account username cannot be empty.'
-//     return;
-//   }
-//   if (!pass || pass == "" || pass.length < 5){
-//     clearDisplayMessages();
-//     document.getElementById('displayMessage').innerHTML = 'Password must have at least 5 letters.'
-//     return;
-//   }
-//   let account = await createAcc(url, users, accName, pass);
-//   console.log("tripUrl, accUrl, userName: ", users, accName)
-//   console.log("account: ", account);
-//   cleanCreateAccInput()
-//   if (!account.alreadyCreated){
-//     clearDisplayMessages();
-//     showHomePage();
-//     document.getElementById('displayMessage').innerHTML = 'Your account ' + accName + ' has been set up.';
-    
-//   } else {
-//     clearDisplayMessages();
-//     document.getElementById("displayMessage").innerHTML = "You have already created account: " + accName;
-//   }   
-// }
+/

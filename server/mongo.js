@@ -15,23 +15,6 @@ const client = new MongoClient(uri, {
  
 });
 
-// const client = new MongoClient(uri, {
-//   maxPoolSize: 200
-// });
-
-// async function run() {
-//   try {
-//     // Connect the client to the server	(optional starting in v4.7)
-//     await client.connect();
-//     // Send a ping to confirm a successful connection
-//     await client.db("admin").command({ ping: 1 });
-//     console.log("Pinged your deployment. You successfully connected to MongoDB!");
-//   } finally {
-//     // Ensures that the client will close when you finish/error
-//     await client.close();
-//   }
-// }
-// run().catch(console.dir);
 
 async function findDataMongo(data){
     try{
@@ -116,29 +99,27 @@ async function loadAllUsersComments(){
 
 
 async function saveDataMongo(data, collectionName) {
+  let result
     console.log("saveDataMongo: I'm in, data", data)
     try {
     await client.connect();
 
       const database = client.db('quackdata');
       const dbCollection = database.collection(collectionName);
+
+      if (!data._id) {
+        result = await dbCollection.insertOne(data);
+
+      } else {
+
+      
       let query = {_id: data._id};
       let update = {$set: data}
       console.log('saveDataMongo, query', query, "update", update)
-   
-      // console.log(`Saving: ${(util.inspect(data, {depth: null}))}`);
   
-    //   const id = data._id;
-    //   console.log('id', id)
-    //   const filter = {_id : id};
-
-  
-      // console.log(`Deleting`);
-    //   await taskList.deleteOne(filter);
-      // console.log(`Inserting`);
-  
-      const result = await dbCollection.updateOne(query, update,  {upsert: true});
-
+      result = await dbCollection.updateOne(query, update);
+      
+      }
       console.log(`saveDataMongo, A document was inserted with the _id: ${result.upsertedId}`, "result", result);
     } finally {
       // await client.close();
@@ -219,28 +200,3 @@ async function saveDataMongo(data, collectionName) {
   };
   
   module.exports = storage;
-
-//   async function saveDataMongo(data) {
-//     try {
-//             await client.connect();
-//             console.log("Successfully connected to Atlas");
-  
-//             // Get the database and collection on which to run the operation
-//             const db = client.db("quizAppDatabase");
-//             //  console.log("db", db)
-//             const col = db.collection("allQuizzes");
-//             //  console.log('id', id)
-//             const id = "lisWitalis";
-//             const filter = {_id : id};
-//             console.log("filter", filter);
-//             await col.deleteOne(filter);
-//             const userdData = {
-//               _id: "lisWitalis",
-//               quizzesList: data
-//             }
-//             const result = await col.insertOne(userdData);
-//             console.log(`A document was inserted with the _id: ${result.insertedId}`);
-      
-    
-//           } finally {await client.close();}
-//   } 

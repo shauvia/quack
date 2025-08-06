@@ -38,16 +38,16 @@ function listening(){
     // console.log(`runnning on localhost ${port}`);
 }
 
-  app.get('/api', (req, res) => {
-    console.log('server runnning');
-    res.send('Hello from Jasna Cholera!');
-  });
+  // app.get('/api', (req, res) => {
+  //   console.log('server runnning');
+  //   res.send('Hello from Jasna Cholera!');
+  // });
 
 app.post('/userupdate', async (req, res) => {
   try{
     let userToken = JSON.parse(req.header("Authorization"));
     let o_id = new ObjectId(userToken);
-    console.log("userupdate, userToken", userToken )
+    // console.log("userupdate, userToken", userToken )
     let userToUpdate = req.body;
     userToUpdate._id = o_id;
     console.log('/userupdate, userToUpdate', userToUpdate)
@@ -84,7 +84,7 @@ app.get('/fetchUser', async (req, res) => {
   app.get('/allUsersEndPoint', async (req, res) => {
     try{
       let allUsers = await loadAllUsersFromMongo();
-      console.log("allUsersEndPoint, users", allUsers)
+      // console.log("allUsersEndPoint, users", allUsers)
       res.send(allUsers);
     } catch (error) {
       if (error.httpCode) {
@@ -96,12 +96,40 @@ app.get('/fetchUser', async (req, res) => {
     }  
   })
 
+function getTimestampFromObjectId(objectId) {
+  let objIdToString = objectId.toString();
+  return new Date(parseInt(objIdToString.substring(0, 8), 16) * 1000);
+  }
+
+function getSortedPostsByDate(author, allPosts){
+    let followedPostsOrderArr = [];
+    for (let post of allPosts) {
+      if ((author.following.includes(post.userId)) || (post.userId === author._id.toString())) {
+        followedPostsOrderArr.push(post);
+      }
+    }
+
+    let followedPostsWithDates = followedPostsOrderArr.map(post => ({
+    ...post,
+    createdAt: getTimestampFromObjectId(post._id)
+    }));
+
+    let sortedPosts = followedPostsWithDates.sort((a, b) => b.createdAt - a.createdAt);
+
+    return sortedPosts;
+  }
+
   app.get ('/allPostsAndComments', async (req, res)=> {
     try{
         // function log(msg) {
         //   console.log(new Date().getTime(), "allPostsAndComments : ", msg);
         // }
-
+      let userToken = JSON.parse(req.header("Authorization"));
+      // console.log('/allPostsAndComments, userToken ', userToken);
+      let o_id = new ObjectId(userToken);
+      // console.log('/allPostsAndComments, userToken ', o_id);
+      let user = await loadUserMongo(o_id);
+      // console.log('/allPostsAndComments, user', user)
       // log("start");
       let allPostsArr = await loadAllUsersPosts();
       // log("after loadAllUsersPosts");
@@ -109,12 +137,17 @@ app.get('/fetchUser', async (req, res) => {
       // log("after loadAllUsersComments");
       let allUsers = await loadAllUsersFromMongo();
       // log("after loadAllUsersFromMongo");
+      let userPosts = [];
       let allUsersPostsAndCommentsArr = [];
       for (oldPost of allPostsArr){
         var post = {...oldPost}
         post.comments = [];
         // let o_id = new ObjectId(post.userId);
- 
+        
+        if (oldPost.userId === user._id.toString()){
+
+        }
+
         function findUser(matchingUser){
           return post.userId === matchingUser._id.toString();
         }
@@ -133,9 +166,12 @@ app.get('/fetchUser', async (req, res) => {
   
             } 
           }
-      }  
+      } 
+      
+      let allsortedPosts = getSortedPostsByDate(user, allUsersPostsAndCommentsArr);
+
       // log("end");
-      res.send(allUsersPostsAndCommentsArr);
+      res.send(allsortedPosts);
     } catch (error) {
       if (error.httpCode) {
         res.status(error.httpCode).send(error.httpMsg);
@@ -151,16 +187,13 @@ app.get('/fetchUser', async (req, res) => {
       let userToken = JSON.parse(req.header("Authorization"));
       let postArr = await loadAllPostsfromMongo(userToken);
       let commentArr = await loadAllCommentsfromMongo(userToken);
-      console.log("/userpostlist", 'postArr',  postArr, 'commentArr', commentArr )
       let postsAndCommentsArr = [];
       for (oldPost of postArr){
         var post = {...oldPost}
         post.comments = [];
         postsAndCommentsArr.push(post);
         for (comment of commentArr) {
-          // console.log('post._id', post._id, 'comment.postId', comment.postId)
           if (post._id.toString() === comment.postId){
-                // console.log('post.id', post._id, 'comment.postId', comment.postId)
                 let o_id = new ObjectId(comment.userId);
                 console.log("userpostlist, o_id ", o_id)
                 let user = await loadUserMongo(o_id);
@@ -172,7 +205,6 @@ app.get('/fetchUser', async (req, res) => {
             } 
           }
       }
-        console.log('postsAndCommentsArr', postsAndCommentsArr)
         res.send(postsAndCommentsArr);
     } catch (error) {
       if (error.httpCode) {
@@ -195,7 +227,7 @@ app.get('/fetchUser', async (req, res) => {
         userId: -1
       };
       let userToken = JSON.parse(req.header("Authorization"));
-      console.log("/useronepost, userToken", userToken)
+      // console.log("/useronepost, userToken", userToken)
       singlePost.content = req.body.content;
       singlePost.userId = userToken;
       console.log("useronepost, singlePost", singlePost)
@@ -218,7 +250,7 @@ app.get('/fetchUser', async (req, res) => {
       let singleComment = req.body;
       let userToken = JSON.parse(req.header("Authorization"));
       singleComment.userId = userToken;
-      console.log("useronecomment, singleComment", singleComment)
+      // console.log("useronecomment, singleComment", singleComment)
       await saveCommentToMongo(singleComment);
       res.send('OK');
     } catch(error){
@@ -266,16 +298,14 @@ app.get('/fetchUser', async (req, res) => {
       let userAccName = req.params.accName;
       console.log('getUser userAccName', userAccName)
       let user = await findDataMongo(userAccName);
+      console.log("get/user', user", user)
       if (!user) {
         console.log('/get/user, account retrieval failed.');
         res.status(404).send('User not found');
         
         } else {
           res.send(user);
-        }    
-
-      // zrobic logowanie do konta i wysylanie uzytkownika i wyswietlanie w kliencie
-
+        }
 
     } catch (error) {
       res.status(500).send();
@@ -286,80 +316,4 @@ app.get('/fetchUser', async (req, res) => {
   
 
   const server = app.listen(port, listening);
-  
-  // async function getUserfromMongo(req){
-  //   let credentials = JSON.parse(req.header("Authorization"));
-  //   let userAcc = credentials.login;
-  //   let encrypted = credentials.encrypted
-  //   const decrypted = crypto.AES.decrypt(encrypted, key).toString(crypto.enc.Utf8)
-  //   errorToThrow = new Error();
-  //   if (userAcc != decrypted){
-  //     errorToThrow.httpCode = 498;
-  //     errorToThrow.httpMsg = "Invalid Token";
-  //     throw  errorToThrow;
-  //   } else {
-  //     let user = await loadDatafromMongo(userAcc);
-  //     if (!user) {
-  //       errorToThrow.httpCode = 404;
-  //       errorToThrow.httlMsg = "No such user";
-  //       throw  errorToThrow;
-  //     } else {
-  //       return user
-  //     }
-  //   }
-  // }
-
-  // try{
-  //   let credentials = JSON.parse(req.header("Authorization"));
-  //   let userAcc = credentials.login;
-  //   let password = credentials.password;
-  //   console.log('Zczytalo', userAcc)
-    
-  //   let accCheck = {
-  //     isCreated : true,
-  //   };
-  //   let user = await loadDatafromMongo(userAcc);
-  //   console.log("Konto: ", user)
-  //   if (!user){
-  //     accCheck.isCreated = false;
-  //     console.log('konto nie istnieje, accCheck: ', accCheck)
-  //     res.send(accCheck);
-  //   } 
-
-  
-
-  // app.put('/users', async function (req, res){
-  //   try{
-  //     let userAccName = req.body.login;
-  //     let password = req.body.password;
-  //     console.log("creating account,login: ", userAccName, "pass: ", password)
-  //     const hash = await bcrypt.hash(password, saltRounds);
-  //     console.log("hash", hash);
-  //     let userExists = await loadDatafromMongo(userAccName);
-  //     console.log("Sprawdzam czy konto istnieje", userExists);
-  //     let accCheck = {
-  //       alreadyCreated : false
-  //     };
-  //     if (!userExists){
-  //       let user = {
-  //         _id : userAccName,
-  //         passwordHash: hash,
-  //         tasks: [],
-  //         nextTaskId: 0,
-  //       }
-  //       await saveDataMongo(user);
-  //       res.send(accCheck);
-  //     } else {
-  //       accCheck.alreadyCreated = true;
-  //       console.log('Konto już jest ', userAccName);
-  //       res.send(accCheck);
-  //     }
-  //   }catch(error){
-  //     res.status(500).send();
-  //     console.log('Error on the server, account creating failed: ', error);
-  //   }  
-  // });
-
-  
-
   
